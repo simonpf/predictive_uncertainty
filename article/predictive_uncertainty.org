@@ -3,7 +3,6 @@
 #+LATEX_HEADER: \usepackage{macros}
 #+LATEX_HEADER: \usepackage{siunitx}
 #+LATEX_HEADER: \usepackage{adjustbox}
-#+LATEX_HEADER: \usepackage{natbib}
 #+LATEX_HEADER: \usepackage{subcaption}
 
 * Abstract
@@ -59,8 +58,10 @@
    Another Bayesian method \cite{kummerow_1, olson_1} to solve the inverse
    problem and that avoids the limitations of assumed Gaussianity and
    computational complexity is based on importance sampling of simulations
-   from a precomputed retrieval database.
+   from a precomputed retrieval database. We will refer to this method
+   here as Bayesian Monte Carlo integration (BMCI).
 
+   
    The retrieval of atmospheric quantities from satellite remote sensing
    measurements requires the inversion of the radiative transfer equation.
    Depending on the atmospheric quantity to be retrieved, this requires
