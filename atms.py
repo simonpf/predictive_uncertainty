@@ -48,13 +48,13 @@ def mmr2vmr(ws, x, species = "h2o"):
 
 def surface_fastem(ws):
     ws.specular_losCalc()
-    ws.InterpAtmFieldToPosition( out=ws.surface_skin_t, field=ws.t_field )
+    ws.Copy(ws.surface_skin_t, ws.sst)
     ws.surfaceFastem(salinity = ws.salinity,
                      wind_speed = ws.wind_speed,
                      wind_direction = ws.wind_direction,
                      transmittance = ws.transmittance)
 
-def setup_atmosphere(ws):
+def setup_atmosphere(ws, dataset = ""):
     """
     This functions performs the setup of the atmospheric state represented by
     the given ARTS workspace object to the mean atmospheric state that was
@@ -63,9 +63,12 @@ def setup_atmosphere(ws):
 
     # We need to reverse the order of the mean states since the
     # since this is required by ARTS.
+    suffix = ""
+    if not dataset == "":
+        suffix = "_" + dataset
     p  = np.load("data/p_grid.npy").ravel()[::-1] * 100.0
-    t  = np.load("data/t_mean.npy").ravel()[::-1]
-    q  = np.load("data/q_mean.npy").ravel()[::-1]
+    t  = np.load("data/t_mean" + suffix + ".npy").ravel()[::-1]
+    q  = np.load("data/q_mean" + suffix + ".npy").ravel()[::-1]
 
     ws.execute_controlfile("general/general.arts")
     ws.execute_controlfile("general/continua.arts")
@@ -94,6 +97,8 @@ def setup_atmosphere(ws):
     ws.Copy(ws.abs_xsec_agenda, ws.abs_xsec_agenda__noCIA)
 
     # Surface
+    ws.NumericCreate("sst")
+    ws.sst = 270.0
     ws.Copy(ws.iy_surface_agenda, ws.iy_surface_agenda__UseSurfaceRtprop )
     surface_agenda = arts_agenda(surface_fastem)
     ws.Copy(ws.surface_rtprop_agenda, surface_agenda)
@@ -155,6 +160,8 @@ def setup_sensor(ws, channels = [-1]):
     changes reduces the frequency sampling inside the ATMS channels in order
     to speed up the simulations.
     """
+    if any(map(lambda i: i > 21, channels)):
+        ws.stokes_dim = 2
     ws.ArrayOfIndexCreate("channels")
     ws.channels = channels
     ws.ArrayOfIndexCreate("viewing_angles")
@@ -198,13 +205,17 @@ def softplus(x):
     return np.log(1.0 + np.exp(x))
 
 class StateDistribution:
-    def __init__(self):
-        self.q_log_mean = np.load("data/q_log_mean.npy").ravel()
-        self.q_log_cov  = np.load("data/q_log_cov.npy")
-        self.t_mean     = np.load("data/t_mean.npy").ravel()
-        self.t_cov      = np.load("data/t_cov.npy")
-        self.qt_mean    = np.load("data/qt_mean.npy")
-        self.qt_cov     = np.load("data/qt_cov.npy")
+    def __init__(self, dataset = ""):
+        suffix = ""
+        if not dataset == "":
+            suffix = "_" + dataset
+
+        self.q_log_mean = np.load("data/q_log_mean" + suffix + ".npy").ravel()
+        self.q_log_cov  = np.load("data/q_log_cov" + suffix + ".npy")
+        self.t_mean     = np.load("data/t_mean" + suffix + ".npy").ravel()
+        self.t_cov      = np.load("data/t_cov" + suffix + ".npy")
+        self.qt_mean    = np.load("data/qt_mean" + suffix + ".npy")
+        self.qt_cov     = np.load("data/qt_cov" + suffix + ".npy")
 
     def sample(self, ws = None):
         q = np.exp(np.random.multivariate_normal(self.q_log_mean, self.q_log_cov))
@@ -217,6 +228,7 @@ class StateDistribution:
             ws.t_field.value[:, 0, 0] = qt[:14:-1]
             q_vmr = mmr2vmr(ws, np.exp(qt[14::-1]), "h2o")
             ws.vmr_field.value[0, :, 0, 0] = q_vmr
+            ws.sst = np.maximum(ws.t_field.value[0, 0, 0], 270.0)
 
         return (q_vmr, t)
 
@@ -234,6 +246,7 @@ class StateDistribution:
             q_vmr = mmr2vmr(ws, q, "h2o")
             ws.vmr_field.value[0, :, 0, 0] = np.copy(q_vmr)
             ws.t_field.value[:, 0, 0] = np.copy(t)
+            ws.sst = np.maximum(ws.t_field.value[0, 0, 0], 270.0)
 
         return (q_vmr, t)
 
