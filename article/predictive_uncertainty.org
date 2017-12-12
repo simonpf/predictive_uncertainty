@@ -1,14 +1,16 @@
 #+TITLE: A neural network-based method to estimate uncertainty in remote sensing retrievals
+#+AUTHOR: Simon Pfreundschuh
 #+OPTIONS: toc:nil
 #+LATEX_HEADER: \usepackage{macros}
 #+LATEX_HEADER: \usepackage{siunitx}
 #+LATEX_HEADER: \usepackage{adjustbox}
 #+LATEX_HEADER: \usepackage{subcaption}
+#+LATEX_HEADER: \usepackage{natbib}
 
 * Abstract
 
    Quantile regression neural networks, a neural network-based regression
-   method is presented which allows the estimation of quantiles of the
+   method, is proposed as a method for the estimation of quantiles of the
    posterior distribution of scalar retrieval quantities. It is shown that
    the method is able to learn to predict quantiles of the posterior
    distribution from a training database consisting of simulated or
@@ -29,39 +31,174 @@
 ** Motivation
 
    The retrieval of atmospheric quantities from remote sensing measurements
-   constitutes an inverse problem and thus generally is /ill posed/. This
-   means that even in the absence of measurement errors, the problem may
-   not allow a unique solution. The Bayesian framework 
-   \cite{tarantola, rodgers} has proven very successful in handling the
-   ill-posedness of remote sensing retrievals by replacing the search for
-   a unique solution of the retrieval problem with that for a probability
-   distribution describing the knowledge about the quantity after a
-   measurement has been performed.
+   constitutes an inverse problem and thus generally is /ill posed/. This means
+   that even in the absence of measurement errors, the problem may not allow a
+   unique solution. The Bayesian formulation of the inverse problem
+   \cite{tarantola, rodgers} provides a systematic and theoretically sound
+   framework to handle the ill-posedness of remote sensing retrievals by
+   replacing the search for a unique solution of the retrieval problem with that
+   for a probability distribution describing the knowledge about the retrieval
+   quantity after a measurement has been performed. The Bayesian solution of the
+   retrieval problem is the a /posteriori distribution/ or /posterior/
+   $\pcond{x}{\vec{y}}$, that is the conditional distribution of the retrieval
+   quantity $x$ given a vector of measurement values $\vec{y}$.
 
-   The Bayesian solution of the retrieval problem is thus the conditional
-   distribution $\pcond{x | \vec{y}}$ of the retrieval quantity $x$ given
-   the measurement $\vec{y}$. The forward problem given by the
-   transmission of radiation through the atmosphere and its detection by a
-   sensor is mostly well understood and many cases allow the solution of
-   the retrieval problem based on a forward model. Such physical
-   retrievals have the advantage of allowing for an accurate analysis of
-   uncertainties as well as conveying a certain sense of understanding of the
-   atmsopheric and radiative processes involved. In general, however, an
-   exact or even approximate computation of the true posterior distribution
-   is computationally too demanding to be practical. The optimal estimation
-   method (OEM) as proposed by \cite{rodgers} simplifies the problem by
-   assuming the prior knowledge and the measurement uncertainty to be
-   Gaussian and the forward model to be only slightly non-linear. Even
-   neglecting the validity of these assumptions, the method is unsuitable
-   for retrievals that involve complex radiative processes such as
-   scattering that are too expensive to model online during the retrieval.
+   The forward problem underlying the inverse problem of retrieving an
+   atmospheric quantity from a remote sensing measurement is given by the
+   transmission of radiation through the atmosphere (and its detection). In
+   cases that allow a sufficiently precise and efficient modeling of the
+   measurement process, a numerical forward model can be used to guide to
+   solution of the inverse problem. These so called /physical retrievals/ have
+   the advantage of allowing an accurate analysis of uncertainties entering the
+   retrieval calculations as well as conveying a certain sense of understanding
+   of the atmsopheric and radiative processes involved. In general, however, an
+   exact or even approximate computation of the true posterior distribution is
+   computationally too demanding to be practical. In contrast to physical
+   retrievals, /empirical retrievals/ are based solely on observations and
+   corresponding measurements of the retrieval quantity obtained from other
+   measurement techniques and thus do not involve any physical modeling.
+
+   The optimal estimation method (OEM) as proposed by \cite{rodgers} simplifies
+   the retrieval problem by assuming the prior knowledge and the measurement
+   uncertainty to be described by Gaussian distributions and the forward model
+   to be only slightly non-linear. In this case the posterior distribution is
+   approximately Gaussian and the solution is obtained by computing its mean and
+   covariance matrix. In cases where an efficient forward model for the
+   computation of simulated measurements and corresponding Jacobians is available,
+   the OEM has become the quasi standard method for Bayesian retrievals. However,
+   even neglecting the validity of the assumptions of Gaussianity and linearity,
+   the method is unsuitable for retrievals that involve complex radiative
+   processes, such as for example scattering, that are too expensive to model
+   online during the retrieval.
+
    Another Bayesian method \cite{kummerow_1, olson_1} to solve the inverse
-   problem and that avoids the limitations of assumed Gaussianity and
-   computational complexity is based on importance sampling of simulations
-   from a precomputed retrieval database. We will refer to this method
-   here as Bayesian Monte Carlo integration (BMCI).
+   problem that avoids the limitations of assumed Gaussianity and computational
+   complexity of the forward model is based on importance sampling of
+   simulations from a retrieval database. In the following the method will be
+   referred to as Bayesian Monte Carlo integration (BMCI). BMCI can be used for
+   physical as well as empirical retrivals. When BMCI used within a physical
+   retrieval, the foward model is needed only be to create the retrieval
+   database and its evaluation is thus not critical for performance of the
+   retrieval. Nevertheless, naive implementations of BMCI may require the
+   traversal of large databases, which limit the computational performance of
+   the retrieval.
+
+   If the Bayesian inverse problem is cast into the more general problem of
+   estimating a conditional distribution $\pcond{x}{\vec{y}}$, also general
+   regression techniques can be used to solve the retieval inverse problem. In
+   particular neural networks have become a popular method to build retrievals
+   and offer the advantage of computational efficiency and high flexibility
+   in incorporating ancillary data into the retrieval. Most of these retrievals,
+   however, neglect the probabilistic character of the retrieval problem and
+   provide only a scalar estimate of the retrieval quantity.
+
+   In this article neural networks are used to estimate the posterior
+   distribution of the Bayesian retrieval problem. It is argued that this
+   approach provides a more complete treatment of the retrieval problem and
+   a better way of dealing with its inherent uncertainties than the 
+   non-probabilistic approach. It is shown that neural networks can
+   successfully learn to represent the posterior distributions of Bayesian
+   inverse problems and yield statistically consistent estimates of uncertainty.
+   This modified application of neural networks thus aims to combine the
+   theoretically sound Bayesian treatment of inverse problems with the
+   flexibility and computational efficiency of neural network based
+   retrivals.
+   
+** Related Work
+   
+   Bayesian remote sensing retrievals data back to at least the seminal
+   work by Rodgers \cite{rodgers_1, rodgers_2, rodgers}.
+   
+   The use of the BMCI method was first proposed in by Kummerow et al. in
+   \cite{kummerow_1} and has since been applied in numerous retrieval algorithms
+   mostly for the retrieval of hydrometeor profiles from passive or combined
+   microwave observations 
+   \cite{olson_1, bauer_1, tassa_1, di_michele_1, petty_1, viltard_1} but also
+   cloud ice \cite{rydberg_1}. It is also used in the Goddard profiling
+   algorithm (GPROF) \cite{gprof}.
+   
+
+
+    Holl et al. \cite{holl} use neural networks trained using retrievals
+    from active sensors to retrieve ice water path from passive infrared
+    and microwave measurements.
+
+    Strangren et al. \cite{strandgren} use several neural networks to perform
+    cloud and opaqueness classification as well as retrieve ice water path
+    and cloud optical depth.
+
+    Cerdeña e al. \cite{cerdena} use neural networks fitted to simulated
+    measurements of the NOAA Advanced Very High Resolution Radiometer
+    to retrieve effective droplet radius, cloud optical thickness and
+    cloud temperature from water clouds.
+
+    Aires et al. \cite{aires_1, aires_2, aires_3} have shown that Bayesian
+    neural networks allow a formal treatment of the retrieval problem and
+    errors along the lines of the framework developed by Rodgers.
 
    
+
+   
+** Novelty and Significance
+   
+   To the best knowledge of the authors, this is the first application of
+   quantile regression for the estimation of posterior distribution of
+   Bayesian inverse problems. Furthermore, the implementation proposed in this
+   article is the first to combine recent trends in neural network
+   techniques, concretely deep networks and stochastic gradient descent
+   training, that allow learning from very large training sets as they are
+   typically encountered in remote sensing applications.
+   
+   In contrast to previous proposals to extend the application of neural networks
+   to Bayesian retrievals, the method proposed here has the advantage of requiring
+   only minimal modification to the standard neural network training and evaluation
+   pipeline and conserving the performance benefits of hardware-optimized neural
+   network implementations.
+   
+   The results presented in this article indicate that quantile regression neural
+   networks are a viable alternative to comparable, inherently Bayesian methods
+   to solve inverse problems while at the same time offering the flexibility
+   and computational performance provided by neural networks. Similarly, it is
+   demsontrated that with only slight modifications, neural network retrievals
+   can be interpreted in a Bayesian way.
+
+** Summary of Contributions
+   
+   Quantile regression neural networks are presented as method to solve
+   Bayesian inverse problems arising from remote sensing retrievals.
+
+   A synthetic retrieval case is presented and used to characterize the
+   performance of BMCI and quantile regression. The predictions are compared
+   to retrievals obtained form Markov Chain Monte Carlo simulations and it
+   is shown that both methods are able to successfully estimate the posterior
+   distribution of remote sensing retrievals.
+   
+   A real world application of quantile regression neural networks to the
+   retrieval of cloud top height pressure from MODIS observations is presented.
+   It is demsonstrated how the method can be used obtain statistically
+   consistent estimates of uncertainty on a per-retrieval basis and that
+   these are better calibrated than estimates based on error statistics
+   computed over a test set.
+
+   In conjuction with this article, implementations of all three retrieval 
+   methods considered are released as part of the typhon package, with the
+   main motivation of providing an efficient and easy to use implementation
+   of quantile regression neural networks. Furthermore, all code used to
+   produce the results presented in this article are released in the form
+   of jupyter notebooks through a public repository.
+
+
+   
+   
+   
+   
+** Quantile Regression Neural Networks
+   
+
+
+
+
+
    The retrieval of atmospheric quantities from satellite remote sensing
    measurements requires the inversion of the radiative transfer equation.
    Depending on the atmospheric quantity to be retrieved, this requires
@@ -105,23 +242,6 @@
     
 
 *** Related Work
-
-    Holl et al. \cite{holl} use neural networks trained using retrievals
-    from active sensors to retrieve ice water path from passive infrared
-    and microwave measurements.
-
-    Strangren et al. \cite{strandgren} use several neural networks to perform
-    cloud and opaqueness classification as well as retrieve ice water path
-    and cloud optical depth.
-
-    Cerdeña e al. \cite{cerdena} use neural networks fitted to simulated
-    measurements of the NOAA Advanced Very High Resolution Radiometer
-    to retrieve effective droplet radius, cloud optical thickness and
-    cloud temperature from water clouds.
-
-    Aires et al. \cite{aires_1, aires_2, aires_3} have shown that Bayesian
-    neural networks allow a formal treatment of the retrieval problem and
-    errors along the lines of the framework developed by Rodgers.
 
 
 
@@ -342,7 +462,6 @@
     processes that are too expensive to involve online modeling during the 
     retrieval. Examples of applications of the method can be found in
     \cite{kummerow_1, olson_1, bauer_1, tassa_1, di_michele_1, petty_1, viltard_1}.
-    It is also used for in the Goddard profiling algorith (GPROF) \cite{gprof}.
 
 
 *** Evaluating Uncertain Predictions
