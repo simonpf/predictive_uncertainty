@@ -109,34 +109,55 @@
    Bayesian remote sensing retrievals data back to at least the seminal
    work by Rodgers \cite{rodgers_1, rodgers_2, rodgers}.
    
-   The use of the BMCI method was first proposed in by Kummerow et al. in
+   The use of the BMCI method was first proposed by Kummerow et al. in
    \cite{kummerow_1} and has since been applied in numerous retrieval algorithms
    mostly for the retrieval of hydrometeor profiles from passive or combined
    microwave observations 
    \cite{olson_1, bauer_1, tassa_1, di_michele_1, petty_1, viltard_1} but also
    cloud ice \cite{rydberg_1}. It is also used in the Goddard profiling
    algorithm (GPROF) \cite{gprof}.
-   
 
+   Also numerous applications of regression techniques, in particular neural
+   networks, to remote sensing retrievals can be found in the literature.
+   Jimenez \cite{jimenez} showed that neural networks can be used to retrieve
+   ozone profiles from passive microwave limb-sounding observations and that
+   they achieve similar performance on a test set of simulated measurements
+   as OEM retrievals. Aires et al. \cite{aires_1, aires_2, aires_3} have shown
+   that Bayesian neural networks allow a formal treatment of the retrieval
+   problem and errors along the lines of the framework developed by Rodgers.
+   Cerdeña e al. \cite{cerdena} use neural networks fitted to simulated
+   measurements of the NOAA Advanced Very High Resolution Radiometer
+   to retrieve effective droplet radius, cloud optical thickness and
+   cloud temperature from water clouds.
 
-    Holl et al. \cite{holl} use neural networks trained using retrievals
-    from active sensors to retrieve ice water path from passive infrared
-    and microwave measurements.
+   Just as BMCI, neural networks can be used to implement combined retrievals
+   that exploit synergies between different types of sensors \cite{minnis, kox}.
+   Holl et al. \cite{holl} use neural networks trained on cloud properties
+   obtained from active sensors to retrieve ice water path from passive infrared
+   and microwave measurements. Strandgren et al. \cite{strandgren} use several
+   neural networks to perform cloud and opaqueness classification as well as
+   retrieve ice water path and cloud optical depth. Håkansson et al. use collocated
+   MODIS and CALIOP observations to retrieve cloud top pressure from MODIS
+   observations.
 
-    Strangren et al. \cite{strandgren} use several neural networks to perform
-    cloud and opaqueness classification as well as retrieve ice water path
-    and cloud optical depth.
-
-    Cerdeña e al. \cite{cerdena} use neural networks fitted to simulated
-    measurements of the NOAA Advanced Very High Resolution Radiometer
-    to retrieve effective droplet radius, cloud optical thickness and
-    cloud temperature from water clouds.
-
-    Aires et al. \cite{aires_1, aires_2, aires_3} have shown that Bayesian
-    neural networks allow a formal treatment of the retrieval problem and
-    errors along the lines of the framework developed by Rodgers.
-
-   
+   While far from being a novel technique, neural network have seen a renewed
+   interest throughout the last decade due to their success on a number of
+   machine learning problems \cite{goodfellow}. This success is to large extent
+   driven by the increased availability of computational power that allows the
+   training of deep models on large amounts of data. While deep learning
+   techniques have been successfully applied to a range of scientific problems
+   \cite{baldi, lecun, leung}, the quantification of uncertainty still remains an open
+   question. While a Bayesian formalism can be applied to obtain probabilistic
+   predictions, its use is hampered by increased computational cost during
+   training and prediction as well as its rather involved implementation. In
+   \cite{lakshminarayanan}, Lakshminarayanan propose the use of deep ensembles
+   trained using proper scoring rules and adversarial examples to obtain
+   well-calibrated probabilistic predictions. This is the approach on which the
+   method proposed in this article builds. However, instead of the negative
+   log-likelihood of a Gaussian distribution, a quantile loss function is
+   used as training criterion. This technique, known as quantile regression,
+   was introduced by Koenker \cite{koenker} and has been applied mainly
+   in econometrics \cite{taylor} but also meteorology \cite{cannon}.
 
    
 ** Novelty and Significance
@@ -187,76 +208,7 @@
    produce the results presented in this article are released in the form
    of jupyter notebooks through a public repository.
 
-
-   
-   
-   
-   
-** Quantile Regression Neural Networks
-   
-
-
-
-
-
-   The retrieval of atmospheric quantities from satellite remote sensing
-   measurements requires the inversion of the radiative transfer equation.
-   Depending on the atmospheric quantity to be retrieved, this requires
-   the modeling of more or less complex physical processes that may or may
-   not yet be fully understood. The retrieval of cloud properties is based
-   on cloud-radiative interactions that are both, not yet fully understood
-   and computationally expensive to model.
-   
-   Database-based retrieval methods perform the retrieval using a database
-   of simulated measurements or observations and thus avoid the problem
-   of computational complexity at least during production.
- 
-   Neural networks are such a database-based retrieval method and have
-   successfully been applied to a wide range of retrieval problems in remote
-   sensing. A common critique towards neural network retrievals is that they
-   lack the ability to produce uncertainty estimates on a per-retrieval basis
-   but have to resort to a statistic characterization on a test set. Quantile
-   regression neural networks (QRNNs) allow to estimate the full posterior
-   distribution of the Bayesian retrieval problem instead of just its mean,
-   which is the case for common least squares-based neural networks.
-   
-    In the first part of this article, a synthetic but realistic retrieval
-    problem whose posterior distribution can be computed using Markov Chain
-    Monte Carlo simulations is used to characterize the proposed method
-    and compare it to a Bayesian retrieval method based monte carlo integration,
-    herein referred to as bayesian monte carlo integration (BMCI). It is shown
-    that the performance of both methods is identical.
-    
-    In the second part of this article a QRNN is trained on training database
-    used of the GPROF algorithm used for the retrieval of rain rates from
-    TRMM Microwave imager.
-
-    The contribution from this article is three-fold: Firstly, quantile
-    regression neural networks are introduced as a technique to estimate
-    posterior distributions of inverse problems in remote sensing. To the
-    best knowledge of the authors there has been no such application, at least
-    in the field of passive micro wave remote sensing. Secondly, a validation
-    case and a general performance characterization is presented. Thirdly,
-    implementations of all three retrieval methods are released as part
-    of the typhon open source python package.
-    
-
-*** Related Work
-
-
-
-*** Machine Learning
-
-   The development of methods for the empirical learning of models from data
-   together with recent advances in computing technology have made a large
-   toolbox of methods for dealing with complex modelling problems available to
-   scientists \cite{jordan}. In particular the last two decades have seen a
-   remarkable advance of machine learning techniques in various scientific
-   domains such as bioinformatics \cite{leung} or particle physics
-   \cite{baldi}.
-
-
-** Methodology
+* Theory
   
    This section briefly introduces the general problem formulation and
    notation as well as the retrieval methods on which the experiments
@@ -267,32 +219,33 @@
    problem is thus to retrieve an atmospheric quantity $x \in \mathbb{R}$
    from an indirect measurement $\vec{y} \in \mathbb{R}^m$. Applying the
    Bayesian framework \cite{tarantola}, the problem may be formulated as
-   finding finding the posterior distribution $\pcond{x}{\vec{y}}$ of
-   $x$ given the measurement $\vec{y}$. The solution of the Bayesian
-   inverse problem is given by means of /Bayes theorem/:
+   finding  the posterior distribution $\pcond{x}{\vec{y}}$ of
+   $x$ given the measurement $\vec{y}$. The formal solution of the
+   Bayesian inverse problem is given by means of /Bayes theorem/:
 
    \begin{align}\label{eq:posterior}
-       \pcond{x | \mathbf{y}} \propto \pcond{\mathbf{y}}{x} \prop(x)
+       \pcond{x}{\mathbf{y}} \propto \pcond{\mathbf{y}}{x} \prop{x}
    \end{align}
 
 
    In most cases, however, this general solution is of little use since
    both the conditional probability of the observed measurement
-   $\pcond{\vec{y}}{x}$ and the a priori distribution $\prop(x)$ cannot
+   $\pcond{\vec{y}}{x}$ and the a priori distribution $\prop{x}$ cannot
    be expressed in closed form and hence only approximations
    of the posterior $\pcond{x}{\vec{y}}$ can be obtained as solutions
    of the inverse problem.
 
-*** Markov Chain Monte Carlo
+** Markov Chain Monte Carlo
 
     Markov Chain Monte Carlo (MCMC) or Markov Chain simulation is a method
-    to generate samples from arbitrary posterior distributions. The method
+    to generate samples from arbitrary posterior distributions. It
     is based on drawing samples from an approximate distribution and
-    refining those in a way such that the resulting sample distribution
+    refining these in a way such that the resulting sample distribution
     converges to the true distribution \cite{bda}. The method thus allows
     direct sampling from the posterior distribution, at least in an
-    asymptotic sense, which is not possible for the other methods considered
-    in this article.
+    asymptotic sense, which is why it is used in this article to validate
+    the estimates of the posterior distribution obtained using the BMCI and
+    QRNN methods.
 
     For the experiment in Section \ref{sec:synthetic} the Metropolis-Hastings
     algorithm is used together with the ARTS radiative transfer simulator
@@ -303,124 +256,121 @@
     of the atmsopheric state and its value recorded as a sample from the
     the posterior distribution.
 
-    Since Markov Chain simulation is an iterative method that
-    consecutively improves the approximation of the target distribution,
-    it is imperative to assess the convergence of the simulation to
-    ensure that the simulation results are sufficiently close
-    to target distribution. As proposed in \cite{bda}, this can be
-    achieved by estimating the scale reduction factor $\hat{R}$:
+    Since Markov Chain simulation is an iterative method that consecutively
+    improves the approximation of the target distribution, it is imperative to
+    assess the convergence of the simulation to ensure that the results are
+    sufficiently close to target distribution. For values $x_{i,j}$ obtained
+    from $i = 1,\ldots,m$ runs started from different initial states each
+    yielding $j = 1,\ldots,n$ samples, this can be achieved by estimating the
+    scale reduction factor $\hat{R}$ \cite{bda}
     
     \begin{align}
     \hat{\text{var}}^+(x | \vec{y}) &= \frac{1}{nm}
          \sum_{j = 1}^m \sum_{i = 1}^n (x_{i,j} - \bar{x}_{\cdot, j})^2
           + \frac{1}{(m - 1)n} \sum_{j = 1}^m(\bar{x}_{\cdot, j} - \bar{x}_{\cdot, \cdot})^2 \\
           \hat{R}^2 &= \frac{\hat{\text{var}}^+(x | \vec{y})}
-                               {\frac{1}{m(n - 1)}\sum_{j = 1}^m \sum_{i = 1}^n (x_{i,j} - \bar{x}_{\cdot, j})^2}
+                               {\frac{1}{m(n - 1)}\sum_{j = 1}^m \sum_{i = 1}^n (x_{i,j} - \bar{x}_{\cdot, j})^2},
     \end{align}
 
-    Moreover,
-    attention has to be paid that consecutive samples are correlated
-    and the effective number of independent samples from the 
-    target distribution is thus less than the simulations steps.
-    The effective sample size can be computed using:
+    where the subscript $\cdot$ denotes an average about the corresponding
+    index.
 
-    
-    \begin{align}
-      \text{insert complicated formula here.}
-    \end{align}
-    
-
-
-*** Quantile Regression 
-
-    While the most common form of regression, /least squares regression/,
-    may be viewed as estimating the mean of a Gaussian distribution with
-    fixed standard deviation conditional on the regressor, the concept can
-    easily be extended to give a more complete estimate of the conditional
-    distribution. By learning an inverse mapping from
-    a measurement $\mathbf{y}$ to a conditional probability
-    $\pcond{x}{\mathbf{y}}$, regression techniques can be used to solve
-    Bayesian inverse problems. One such regression technique, that
-    allows the estimation of arbitrary posterior distributions, is quantile
-    regression \cite{koenker}. As the name suggests, the method can be
-    used to estimate the /quantiles/ of the conditional distribution
-    $\pcond{x}{\vec{y}}$.
-
-    Given the cumulative density function $F(x)$ of a
-    probability distribution $P$, its $\tau$ th quantile is defined as:
+    Moreover, attention has to be paid that consecutive samples are correlated
+    and the effective number of independent samples from the target distribution
+    is thus less than the simulations steps. The effective sample $\hat{n}_{eff}$
+    size can be computed using:
 
     \begin{align}
-    F^{-1}(\tau) &= \inf \{x \: : \: F(x) \geq \tau \}
+    V_t &= \frac{1}{m(n - t)} \sum_{j = 1}^m \sum_{i = t + 1}^n (x_{i,j} - x_{i-t, j})^2 \\
+    \hat{n}_{eff} &= \frac{mn}{1 + 2 \sum_{t = 1}^T 1 - \frac{V_t}{2\hat{\text{var}}^+}}
     \end{align}
 
-    It can be shown \cite{koenker}, that the $\tau$ th quantile
-    $x_\tau$ of $F$  minimizes the expected value
-    $\mathcal{E}_x(\rho_\tau(x_\tau, x))$ of the loss function
+** Neural Networks
+    
+    Neural networks are a general computing model that computes a vector of
+    outputs $\mathbf{y}_{NN}$ from an input vector $\mathbf{x}_{NN}$ by
+    propagating the input activations through a sequence of layers with
+    learnable weights and biases:
+    
+    \begin{align}
+        \mathbf{x}_{NN, i} &= f_{i}
+        \left ( \mathbf{W}_{i} \mathbf{x}_{NN, i - 1} + \mathbf{b}_i \right )
+    \end{align}
+
+    where $f_i$ is the activation function of layer $i$.
+
+    Neural networks can be used to solve regression problems by applying
+    /supervised learning/ to find the weights and biases that provide the
+    best fit of the function represented by the neural network and the
+    set of values to fit. In this context, best is defined as minimizing
+    the mean of a given loss function $\mathcal{L}(\hat{\vec{y}},\vec{y})$
+    over the training set.
+
+    Probabilistic predictions can be obtained from a neural network, by
+    interpreting the outputs $\mathbf{y}_{NN}$ as values of a parametrization
+    of a probability distribution \cite{mdn}. A neural network trained
+    using squared error loss may be viewed as a maximum likelihood
+    estimator of the mean of a conditional Gaussian distribution with
+    fixed standard deviation.
+
+    Recent developments in machine learning \cite{lecun, baldi} have shown
+    that deep neural networks, that is networks with several hidden layers
+    and a large number of neurons, can learn complex relations from data
+    when trained on a sufficiently large training sets. Moreover, the large
+    training sets and stochastic batch gradient descent training 
+    reduce the risk of overfitting and the sensitivity to network
+    design \cite{goodfellow}.
+    
+** Quantile Regression 
+
+    While the most common form of regression, /least squares regression/, may be
+    viewed as estimating the mean of a Gaussian distribution with fixed standard
+    deviation conditional on the regressor, the concept can easily be extended
+    to give a more complete estimate of the conditional distribution. By
+    learning an inverse mapping from a measurement $\mathbf{y}$ to a conditional
+    probability $\pcond{x}{\mathbf{y}}$, regression techniques can be used to
+    solve the Bayesian inverse problem (\ref{eq:posterior}). Quantile regression
+    \cite{koenker} is a method that can be used to estimate the /quantiles/ of
+    the conditional distribution $\pcond{x}{\vec{y}}$. Given the cumulative density function $F(x)$ of a probability distribution
+    $p$, its $\tauth$ quantile is defined as:
+
+    \begin{align}
+    F^{-1}(\tau) &= \inf \{x \: : \: F(x) \geq \tau \} \end{align}
+
+    It can be shown \cite{koenker}, that the $\tau$ th quantile $x_\tau$ of $F$
+    minimizes the expected value $\mathcal{E}_x(\mathcal{L}_\tau(x_\tau, x))$ of the
+    loss function
 
     \begin{align}\label{eq:quantile_loss}
-    \rho_{\tau}(x_\tau, x) &= \begin{cases}
-                           (1 - \tau)|x - x_\tau| &, x_\tau < x \\
-                           \tau      |x - x_\tau| & \text{otherwise}
-                           \end{cases} \\
-    &= (x - x_\tau)(\tau - I_{x < x_\tau}).
-    \end{align}
+    \mathcal{L}_{\tau}(x_\tau, x) &= \begin{cases} (1 - \tau)|x - x_\tau| &, x_\tau < x
+                           \\ \tau |x - x_\tau| & \text{otherwise} \end{cases}
+                           \\ &= (x - x_\tau)(\tau - I_{x < x_\tau}).
+                           \end{align}
 
-    The reduction of the problem of finding the quantiles of a
-    distribution function to an optimization problem makes it possible
-    to apply this to any machine learning method that is trained in a
-    supervised manner, that is by minimizing the a certain loss function
-    over a given training set. Applications of this loss function to
-    different machine learning methods such as neural networks
-    \cite{cannon, taylor} or tree-based methods \cite{meinshausen} can be
-    found in the statistical literature.
-
-*** Neural Networks
-
-     For the experiments in this article a multilayer perceptron will be used
-     to perform the quantile regression. The influence of depth, i.e. number\
-     of hidden layers, and width, i.e. number of neurons per layer
-     of the network will be investigated. A single network is used to
-     estimate all desired quantiles simultaneously. In the experiments
-     the quantiles at 
-
-     \begin{align}
-     \tau = 0.05, 0.1, 0.2, \ldots, 0.8, 0.9, 0.95
-     \end{align}
-
-     were used.
-
-     The training of the neural networks is performed using stochastic gradient
-     descent. The learning rate is adaptively reduced when the loss on an
-     independent validation set stops decreasing. The training is terminated
-     when a predefined minimal learning rate is reached.
-
-     While neural networks have been used before to perform quantile
-     regression, the only implementation that the authors are aware of is
-     the R implementation by Cannon \cite{cannon}. While this implementation
-     also supports non-linear networks it is limited in its applicability to
-     large datasets due to the use of a Newton-based minimization method during
-     training. To overcome these limitations, a new implementation of quantile
-     regression neural networks was developed in python. The implementation
-     is based on the Keras package which provides a performance-optimized,
-     flexible, state-of-the-art implementation of neural networks. 
-
+    The reduction of the problem of finding the quantiles of a distribution
+    function to an optimization problem makes it possible to apply this to any
+    machine learning method that is trained using supervised learning. Moreover,
+    Gneiting et al. \cite{gneiting} showed that the quantile loss function is a
+    proper scoring rule and using it as a learning criterion iwll thus lead well
+    calibrated predictions.
 
 *** Bayesian Monte Carlo Integration
 
-    Another method to solve the Bayesian inverse problem is by
-    approximately computing integrals of the form
+    The BMCI method is based on the use of importance sampling used to 
+    approximate integrals over the posterior distribution. Consider an
+    integral of the form
+
     
     \begin{align}\label{eq:bmci_int}
-    \hat{x}_{|\mathbf{y}} = \int f(x') \pcond{x'}{\mathbf{y}} \: dx'.
+     \int f(x') \pcond{x'}{\mathbf{y}} \: dx'.
     \end{align}
 
-    This can be done by means of importance sampling, i.e. rewriting the
-    integral as
+    Applying Bayes' theorem, the integral can be written as
 
     \begin{align}
-    \int f(x') \pcond{x'}{\mathbf{y}}\frac{\prop{x'}}{\prop{x'}} \: dx' &=
-    \int f(x') \frac{\pcond{\mathbf{y}}{x'}}
-                    {\int \pcond{\mathbf{y}}{x'} \: dx'}\prop{x'} \: dx'.
+    \int f(x') \frac{\pcond{x'}{\mathbf{y}}\prop{x'}}{\prop{\vec{y}}} \: dx' &=
+    \int f(x') \frac{\pcond{\mathbf{y}}{x'}\prop{x'}}
+                    {\int \pcond{\mathbf{y}}{x''} \: dx''} \: dx'.
     \end{align}
     
     The last integral can be approximated by a sum over an observation
@@ -428,7 +378,7 @@
     to the a priori distribution $\prop{x}$:
 
     \begin{align}
-    \hat{x}_{|\mathbf{y}}  &= \sum_{i = 1}^n \frac{w_i(\mathbf{y}) f(x_i)}
+    \int f(x') \pcond{x'}{\mathbf{y}} \: dx' & \approx  \sum_{i = 1}^n \frac{w_i(\mathbf{y}) f(x_i)}
             {\sum_{j = 1}^n w_j(\mathbf{y})}.
     \end{align}
 
@@ -458,38 +408,36 @@
                                       {\sum_{j = 1}^n w_j(\mathbf{y})}
     \end{align}
 
-    This method has become the quasi standard for retrievals involving physical
-    processes that are too expensive to involve online modeling during the 
-    retrieval. Examples of applications of the method can be found in
-    \cite{kummerow_1, olson_1, bauer_1, tassa_1, di_michele_1, petty_1, viltard_1}.
-
 
 *** Evaluating Uncertain Predictions
     
     Comparing two different probabilistic predictions against an observed value
-    is difficult because the underlying conditional distribution is generally
-    not known. When comparing a probabilistic prediction to point data, the
-    predicted conditional distribution should be sharp, i.e. concentrated
-    in the vicinity of the observed value compared to a naive prediction based
-    on a priori knowledge, while at the same time being well calibrated, that
-    is predicting probabilities that truthfully reflect observed frequencies
-    \cite{gneiting_2}. Summary measures for the evaluation of predicted 
-    conditional distributions are called scoring rules \cite{gneiting}.
-    An important property of these scoring rules is propriety, which
-    formalizes the concept of the scoring rule rewarding both sharpness
-    and calibration of the prediction.
+    is difficult because the underlying true conditional distribution is
+    generally not known. When comparing a probabilistic prediction to point
+    data, the predicted conditional distribution should be sharp, i.e.
+    concentrated in the vicinity of the observed value, while at the same time
+    being well calibrated, i.e. predicting probabilities that truthfully reflect
+    observed frequencies \cite{gneiting_2}. Summary measures for the evaluation
+    of predicted conditional distributions are called scoring rules
+    \cite{gneiting}. An important property of these scoring rules is propriety,
+    which formalizes the concept of the scoring rule rewarding both sharpness
+    and calibration of the prediction. Besides providing reliable measures
+    for the comparison of probabilistic predictions, proper scoring rules
+    can also be used as loss function in supervised learning incentivize
+    statistically consistent predictions.
 
-    As noted in \cite{gneiting}, the quantile loss function 
-    given in equation (\ref{eq:quantile_loss}) is a proper scoring rule for percentile 
-    estimation and can thus be used to compare the skill of different 
-    methods for percentile estimation.
+    As noted in \cite{gneiting}, the quantile loss function given in equation
+    (\ref{eq:quantile_loss}) is a proper scoring rule for quantile estimation
+    and can thus also be used to compare the skill of different methods for
+    quantile estimation.
 
     Another proper scoring rule for the evaluation of estimations of a
-    cumulative distribution function $F$ is the continuous ranked
-    probability score (CRPS) defined as
+    cumulative distribution function $F$ is the continuous ranked probability
+    score (CRPS) defined as
 
     \begin{align}\label{eq:crps}
-    \text{CRPS}(F, x) &= \int_{-\infty}^{\infty} \left ( F(y) - I_{x \geq y} \right )^2 \: dy
+    \text{CRPS}(F, x) &= \int_{-\infty}^{\infty} 
+                         \left ( F(y) - I_{x \geq y} \right )^2 \: dy
     \end{align}
     
     For the methods used in this article the integral in \ref{eq:crps} can only
@@ -498,48 +446,42 @@
 
     In addition to the scoring rules described above, which can be used to
     evaluate estimations of uncertainty against point data, the predictions
-    obtained from quantile regression and BMCI are compared against
-    posterior distributions obtained from Markov chain Monte Carlo
-    simulations. These are generated from a simplified but realistic
-    simulated retrieval setup, which guarantees that the true posterior
-    distribution can be sampled from using MCMC. This distribution can
-    the be used as a ground truth to assess the predictions obtained
-    using the QRNN and BMCI.
+    obtained from quantile regression and BMCI are compared against posterior
+    distributions obtained from Markov chain Monte Carlo simulations. These are
+    generated from a simplified but realistic simulated retrieval setup, which
+    guarantees that the true posterior distribution can be sampled from using
+    MCMC. This distribution can then be used as a ground truth to assess the
+    predictions obtained using the QRNN and BMCI.
+
+* Implementation
 
 * Application to a Synthetic Retrieval Case
   \label{sec:synthetic}
 
-   The aim of this section is to provide a validation case for the
-   application of quantile regression neural networks to estimate
-   uncertainty in remote sensing retrievals. To this end a retrieval
-   case has been set up that is based on a number of simplifying
-   assumptions that are necessary to allow an analytical expression
-   of the density function of the posterior distribution
-   (up to a constant proportionality factor) using Bayes theorem.
+   In this section the simulated retrieval case that has been used
+   to evaluate and compare the performance of BMCI and QRNNs as retrieval
+   methods.
 
-** Parametrizing Atmospheric Variability
+** Setup
 
-   For the retrieval simulations, passive microwave clear-sky
-   observations of integrated column water vapor (CWV) over the ocean are
-   considered. The atmospheric state is represented by profiles
-   of temperature and water vapor concentrations. The variablility of
-   these quantities has been estimated based on ECMWF ERA Interim
-   data \cite{era_interim} from the full year 2016 restricted to
-   latitudes between $23^\circ$ and $66^\circ$ North.
-   Parametrizations of the multivariate distributions of temperature
-   and water vapor are obtained by fitting a joint multivariate normal
-   distribution to the temperature and the logarithm of water vapor
-   concentrations. The fitted distribution represents the a priori
-   knowledge on which the simulations are based.
+   For this experiment, the retrieval of column water vapor (CWV) from passive
+   microwave observations over the ocean is considered. The state of the
+   atmosphere is represented by profiles of temperature and water vapor
+   concentrations. The variablility of these quantities has been estimated based
+   on ECMWF ERA Interim data \cite{era_interim} from the year 2016 restricted to
+   latitudes between $23^\circ$ and $66^\circ$ North. Parametrizations of the
+   multivariate distributions of temperature and water vapor were obtained by
+   fitting a joint multivariate normal distribution to the temperature and the
+   logarithm of water vapor concentrations. The fitted distribution represents
+   the a priori knowledge on which the simulations are based.
 
-*** Observation System
+*** Radiative Transfer Simulations
 
    The /Atmospheric Radiative Transfer Simulator/ (ARTS) \cite{arts} is used to
-   simulate satellite observations of the atmsopheric states sampled
-   from the a priori distribution. The observations consist of
-   simulated brightness temperatures from five channels at
-   $23, 88, 165, \SI{183}{\giga \hertz}$ (c.f. Table \ref{tab:channels}) 
-   from the ATMS sensor.
+   simulate satellite observations of the atmsopheric states sampled from the a
+   priori distribution. The observations consist of simulated brightness
+   temperatures from five channels at $23, 88, 165, \SI{183}{\giga \hertz}$
+   (c.f. Table \ref{tab:channels}) of the ATMS sensor.
 
    #+NAME: tab:channels
    
@@ -570,75 +512,129 @@
 
    The simulations take into acount only absorption and emission from water
    vapor. Ocean surface emissivities are computed using the Fastem \cite{fastem}
-   model, neglecting surface winds. The sea surface temperature is assumed equal to
-   the temeperature at the highest pressure level but no lower
-   than $\SI{270}{\kelvin}$. 
-   Sensor characteristics and absorption lines are taken from the ATMS sensor descriptions
-   that are provided within the ARTS XML Data package.
-   Simulations are performed assuming a plane-parallel atmsophere and
+   model neglecting surface winds. The sea surface temperature is assumed equal
+   to the temeperature at the highest pressure level but no lower than
+   $\SI{270}{\kelvin}$. Sensor characteristics and absorption lines are taken
+   from the ATMS sensor descriptions that are provided within the ARTS XML Data
+   package. Simulations are performed assuming a plane-parallel atmsophere and
    neglecting polarization.
 
 *** Training and Test Data
 
     The fitted distributions are used to generate a training ensemble of
     $10^6$ atmospheric states. For each of them, the integrated column water
-    vapor is computed as well as the corresponding observed brightness
-    temperatures, that are simulated using ARTS.
+    vapor is computed as well as the corresponding observed brightness 
+    temperatures.
     
-    In addition to that, two test sets are generated. The first one,  the
-    /point data/ test set, consists $10^5$ additional brightness temperature
-    vectors and corresponding values of CWV. The second one, the
-    /probabilistic  test set/ consists of $5 \times 10^3$ observed brightness
-    temperatures and $800$ samples drawn from the posterior distribution
-    $\pcond{x}{\mathbf{y}}$.
-    
+    In addition to that, two test sets are generated:
+      1. A /point data/ test set consisting of scalar CWV values sampled from
+         the a priori distribution of atmospheric states and corresponding
+         simulated brightness temperatures
+      2. A /probabilistic/ test set consisting of $5 \times 10^3$ simulated 
+         observations and for each of those 2000 samples from the corresponding
+         true posterior distribution obtained from MCMC simulations.
 
-** MCMC Retrievals
-
-    MCMC simulations were used for the generation of the probabilistic test set.
-    Each of the $10^5$ retrievals consist of 8 independent MCMC simulations with
-    starting values generated based on the a priori assumptions. A random walk
-    in the atmospheric state space is used to generate proposal profiles of temperature
-    and log water vapor.  Each of the 8 simulations is started with a burn in phase of
-    1000 steps. This is followed by an adaptive phase in which the covariance matrix of
-    the random walk used for the proposal distribution is adapted to reach an acceptance
-     rate of about $20\%$. The adaptive phase is followed by another burn in phase,
-    which is then followed by the production phase in which the generated profiles
-    and corresponding CWV values are recorded. From samples generated during
-    the production phase only every tenth is kept to decrease the correlation
-    between the samples. The quality of the retrieval is ensured by computing
-    the reduction factor $\hat{R}$ and the effective sample size
-    according to equations (11.8) and (11.4) in \cite{bda} and requiring them to be below
-    $1.1$ and $100$, respectively.
 
 ** QRNN Model Selection
 
-    Neural networks have a relatively large number of hyper-parameters that
-    influence their performance. In this study only networks with a given
-    number $n_h$ of hidden layers each with a given width (number of neurons)
-    $n_n$ and activation function $f$ are considered.
+   The QRNN implementation that has been developed for this work has the
+   following hyperparameters that specify its structure:
+   
+   - the number of hidden layers,
+   - the width of the hidden layers,
+   - the activation functions of each layer.
 
-    For these remaining parameters, a naive grid search has been performed using
-    10-fold cross validation on the training set. For each network the validation loss,
-    the quantile losses $\rho_\tau$ for the estimated quantiles $\tau$ and
-    the CRPS score are computed. The full results are given in Table
-     \ref{tab:model_selection} in the appendix. 
+   In addition to that, the following parameters can be used to influence
+   the learning process:
 
-    The results show a large difference between using linear activations as opposed
-    to non-linear activations. This is expected since a linear network can only
-    model linear relations and is thus equivalent to linear regression. The purpose
-    of including the linear activations in the parameter search was mainly to
-    illustrate the need for increased expressiveness of the neural network model
-    and validate the use of non-linear activation functions.
+   - The batch size,
+   - the minimum learning rate,
+   - the learning rate decay,
+   - and the number of epochs without decrease of loss on the validation
+     set before reducing the learning rate.
 
-    While the performance of the networks with non-linear activations is comparable
-    the results show a slight advantage for networks with ReLU activation functions.
-    Performance is significantly increased when going from one to two hidden
-    layers as well as to a width from 16 up to 64 but saturates for higher
-    values. Based on these results, a network with three hidden layers and 128 neurons
-    each has been chosen for the comparison against BMCI.
+   To investigate the influence of these parameters on the performance of
+   the QRNN, 10-fold cross validation has been used to estimate the
+   performance impact of different hyperparameter configurations. Since the
+   complete hyperparamter space is too large to be explored exhaustively,
+   a joint grid search was performed to find the approximately optimal
+   structural hyperparameters. This was  followed by an optimization of the
+   training parameters for the best performing configuration found in the
+   first search.
 
-** Point Value Test Set
+   The full results for the grid search are given in Table
+   \ref{tab:model_selection} in the appendix. The results show a large
+   difference between using linear activations as opposed to non-linear
+   activations. This is expected since a linear network can only model linear
+   relations and between the input variables. While the performance of the
+   networks with non-linear activations is comparable, the results show a slight
+   advantage for networks with ReLU activation functions. Performance is
+   significantly increased when going from one to two hidden layers as well as
+   to a width from 16 up to 64 but saturates for higher values. Based on these
+   results, a network with three hidden layers and 128 neurons each has been
+   chosen for the comparison against BMCI.
+
+** Results
+
+   The performance of BMCI and QRNNs for differently sized training sets has
+   been investigated on the two test sets.
+
+*** Probabilistic Test Set
+   \label{sec:prob_test}
+
+   The probabilistic test set consists of samples from the true posterior
+   distribution and thus allows for a more detailed assessment of the
+   posterior distributions estimated using BMCI or a QRNN.
+
+   Figure \ref{fig:posterior_100k} and \ref{fig:posteriors} display exemplaric
+   results from the probabilistic test set in the form of the estimated
+   cumulative distribution functions for training set sizes of $10^5$ and
+   $10^6$, respectively. The choice of the cases plotted is based on their
+   rank with respect to the true CWV value sorted in ascending order. 
+   For both training set sizes, BMCI and the QRNN manage to reproduce the
+   posterior distributions reasonably well. The result in the  first panel,
+   however, shows that the QRNN struggles to reproduce the true shape of the
+   CDF whereas BMCI performs well here. The reason for this is likely the
+   underrepresentation of cases with equally small column water vapor in
+   the training set. The results also indicate that using an ensemble of
+   QRNNs improves the predictions from the QRNN.
+
+   In order to assess how well predicted quantiles approximate those of the true
+   posterior distribution, the fractions of MCMC samples that are less than the
+   predicted quantiles are compute for both the BMCI and QRNN predictions. The
+   distribution of these fractions for the $\tauth$ quantile should, in the
+   ideal case, be a Dirac delta function centered at $\tau$. In general,
+   however, the predicted quantile will will correspond to an /effective
+   quantile/ that deviates from the true $\tau\text{th}$ quantile of the
+   posterior distribution. The distributions of these effective quantiles are
+   displayed in Figure \ref{fig:quantile_distributions}. The plots illustrate
+   how well the two methods perform in estimating the quantilese of the
+   posterior distribution on the probabilistic test set. The quality of the
+   predictions from both methods is very similar. While the results obtained
+   from a single QRNN are slightly inferior to the predictions from BMCI, using
+   an ensemble of five QRNNs gives slightly better results than obtained from
+   BMCI.
+
+
+   \begin{figure}[hbpt]
+   \centering
+   \begin{subfigure}{0.49\textwidth}
+   \includegraphics[width=\textwidth]{../plots/results_quantiles_100_k}
+   \caption{$n_\text{train} = 10^5$}
+   \label{fig:scorescrps}
+   \end{subfigure}%
+   \begin{subfigure}{0.49\textwidth}
+   \includegraphics[width=\textwidth]{../plots/results_quantiles}
+   \caption{$n_\text{train} = 10^6$}
+   \label{fig:scoresmape}
+   \end{subfigure}
+   \caption{Distribution of predicted quantiles for training set size
+   $n_\text{train} = 10^5$ and $n_\text{train} = 10^6$.}
+   \label{fig:quantile_distributions}
+   \end{figure}
+
+
+*** Point Value Test Set
    
    On the point value test set, the quantile loss, the CRPS and the MAPE are
    used to characterize the performance of the two methods.
@@ -677,42 +673,6 @@
    \end{figure}
    
 
-** Probabilistic Test Set
-   \label{sec:prob_test}
-
-   The probabilistic test set allows for a more detailed assessment of the
-   estimated posterior distributions.
-
-   Figure \ref{fig:posteriors} displays exemplaric results from the test set in
-   the form of cumulative distribution functions. The choice of the test cases
-   is based on their rank with respect to the true CWV value sorted in ascending
-   order. Generally, both BMCI and the QRNN agree well with the posterior
-   distribution obtained using MCMC. The first panel however shows that the
-   QRNN struggles to reproduce the true shape of the CDF whereas BMCI performs
-   well here.
-
-   In order to assess how well the predicted quantiles predict the posterior
-   distribution, the fractions of MCMC samples that are less than the predicted
-   value are compute for both the QRNN and the BMCI prediction. Ideally, for
-   the $\tau\text{th}$ predicted quantile, this should be a Dirac delta
-   centered at $\tau$. In general, however, the predicted quantile will
-   will correspond to an /effective quantile/ that deviates from the
-   true $\tau\text{th}$ quantile of the posterior distribution. The
-   distributions of these effective quantiles are displayed in Figure
-   \ref{fig:quantile_distributions}. This plot thus illustrates how well
-   the two methods perform in estimating the quantilese of the posterior
-   distribution on the probabilistic test set. While the results for
-   both methods are very close, BMCI seems to yield slightly shaper
-   predictions of the posterior quantiles.
-
-
-   \begin{figure}[hbpt!]
-   \centering
-   \includegraphics[width = 0.8\linewidth]{../plots/results_quantiles}
-   \caption{Distribution of the effective quantile values for the estimated
-            quantiles.}
-   \label{fig:quantile_distributions}
-   \end{figure}
 
    
 * Appendix
@@ -720,7 +680,7 @@
   # Estimated Posterior CDFs
 
   \begin{figure}
-  \includegraphics[width = \textwidth]{../plots/posterior_cdfs_5}
+  \includegraphics[width = \textwidth]{../plots/posterior_cdfs}
   \caption{Estimated cumulative posterior distributions obtained from MCMC (grey),
            BMCI (blue), QRNN (red). Selection is based on the rank of the true CWV
            value sorted in ascending order.}
