@@ -247,15 +247,6 @@
     the estimates of the posterior distribution obtained using the BMCI and
     QRNN methods.
 
-    For the experiment in Section \ref{sec:synthetic} the Metropolis-Hastings
-    algorithm is used together with the ARTS radiative transfer simulator
-    to generate samples directly from the posterior distribution given
-    by equation (\ref{eq:posterior}).
-    Proposal atmospheric states are generated from a multivariate random
-    walk.  In each step the retrieval quantity is computed as a functions
-    of the atmsopheric state and its value recorded as a sample from the
-    the posterior distribution.
-
     Since Markov Chain simulation is an iterative method that consecutively
     improves the approximation of the target distribution, it is imperative to
     assess the convergence of the simulation to ensure that the results are
@@ -455,20 +446,96 @@
 
 * Implementation
 
+  In this section the implementation of the retrieval methods in particular
+  the quantile regression neural networks used in the following sections are
+  described. The implementations of all methods are released as parts of the
+  python package ~typhon~ \cite{typhon}. The code for all computations
+  presented in this paper is made available in the form of jupyter notebook
+  through a public repository \cite{github_repository}.
+
+** Markov Chain Monte Carlo
+
+   Our implementation of MCMC uses the Metropolis-Hastings algorithm to generate
+   samples from the posterior distribution  given by equation
+ (\ref{eq:posterior}). The retrieval is performed in the space of atmospheric
+   states given by the profiles of temperature and water vapor concentrations
+   used to model a plane parallel atmsophere. Proposal states are generated
+   from a random walk using the a priori covariance matrix scaled by an
+   adaptive factor that ensures to keep the acceptance rate near $20\%$.
+
+   Each MCMC retrieval consists of 8 independent runs, that are started with
+   different random states samples from the a priori distribution. Each run
+   starts with a warm-up phase followed by am adaptive phase during which the
+   scaling of the covariance matrix of the random walk used to generate
+   proposal states is adapted. This is followed by a production phase during
+   which 5000 samples are generated from which only 250 are kept in order to
+   decrease the correlation between the samples. To ensure sufficient
+   convergence of the simulations, the scale reduction factor $\hat{R}$ and
+   the effective number of independent samples is computed an the retrieval
+   discarded if they are not smaller than 1.1 and large than 100, respectively.
+   
+** Quantile Regression Neural Network
+
+   A implementation of quantile regression neural networks has been developed
+   based on the ~keras~ framework for deep learning. The main extension was the
+   addition of a flexible loss function, that can be used to train neural
+   networks on any set of quantiles. The approach chosen here is to train a
+   single network to predict all quantiles. In addition to that training and
+   validation data generators have been implemented that allow a more flexible
+   incorporation of noise information into the training process. The general
+   idea is to keep the training data noise-free and add noise according to
+   sensor properties first when a batch of training data is presented to the
+   network. This was found to be advantageous for the simulated retrieval case
+   to be discussed in Section \ref{synthetic}. The QRNN implementation also
+   provides an option to train an ensemble of networks and use them to
+   predict quantiles. For an ensemble, the predicted quantiles are simply
+   the means of the quantiles predicted from the networks.
+
+   For the training of the neural network an adaptive form of stochastic batch
+   gradient descent is used. During training, loss is monitored on an internal
+   validation set consisting of $10\%$ of the data provided for training. When
+   the loss on this internal validation set hasn't decreased for a given number
+   of epochs, the training rate is reduced by a given reduction factor. The
+   training is stopped when a certain minimum learning rate is reached.
+
+   The reconstruction of the CDF from the estimated quantiles is obtained
+   by using the quantiles as nodes of a piece-wise linear approximation and
+   extending the first and last segements out to 0 and 1, respectively.
+   This approximation is also used to compute the CRPS score on a test
+   data.
+
+** Bayesian Monte Carlo Integration
+
+   The BMCI method has been implemented also in python. The implementation
+   provides functionality to speed up calculations by excluding entries that are
+   guaranteed to have a smaller weight then a given limit. For the experiments,
+   however, this was not used, since computational performance was not
+   considered critical. In addition to retrieving the first two moments of the
+   posterior distribution the implementation also provides functionality to
+   retrieve the posterior CDF using equation (\ref{eq:bmci_cdf}). This is done
+   by ordering the weights according to their value and then interpolating the
+   inverse CDF to the desired quantile(s). To compute the CRPS score for a given
+   retrieval, the trapezoidal rule is used to integrate over the database
+   values $x_i$ and corresponding weights $w_i(\vec{y})$.
+
+
 * Application to a Synthetic Retrieval Case
   \label{sec:synthetic}
 
-   In this section the simulated retrieval case that has been used
-   to evaluate and compare the performance of BMCI and QRNNs as retrieval
-   methods.
+  In this section the simulated retrieval case that has been used to
+  compare the performance of QRNNs and BMCI as retrieval methods is
+  presented. The influence of different hyperparameters on the performance
+  of the QRNN is investigated and finally the performance of the two
+  methods is compared with respect to amount of training data.
 
-** Setup
+** Retrieval Setup
 
    For this experiment, the retrieval of column water vapor (CWV) from passive
    microwave observations over the ocean is considered. The state of the
    atmosphere is represented by profiles of temperature and water vapor
-   concentrations. The variablility of these quantities has been estimated based
-   on ECMWF ERA Interim data \cite{era_interim} from the year 2016 restricted to
+   concentrations on 15 pressure levels between $10^3$ and $\SI{10}{\hecto
+   \pascal}$. The variablility of these quantities has been estimated based on
+   ECMWF ERA Interim data \cite{era_interim} from the year 2016 restricted to
    latitudes between $23^\circ$ and $66^\circ$ North. Parametrizations of the
    multivariate distributions of temperature and water vapor were obtained by
    fitting a joint multivariate normal distribution to the temperature and the
@@ -538,41 +605,36 @@
 ** QRNN Model Selection
 
    The QRNN implementation that has been developed for this work has the
-   following hyperparameters that specify its structure:
-   
-   - the number of hidden layers,
-   - the width of the hidden layers,
-   - the activation functions of each layer.
-
-   In addition to that, the following parameters can be used to influence
-   the learning process:
-
-   - The batch size,
-   - the minimum learning rate,
-   - the learning rate decay,
-   - and the number of epochs without decrease of loss on the validation
-     set before reducing the learning rate.
+   following hyperparameters that specify its structure: (1) the number of
+   hidden layers, (2) the width of the hidden layers, (3) the activation
+   functions of each layer. In addition to that, the following parameters
+   can be used to influence the learning process: (4) the batch size,
+   (5) the minimum learning rate, (6) the learning rate decay, and (7) the
+   number of epochs without decrease of loss on the validation set before
+   reducing the learning rate.
 
    To investigate the influence of these parameters on the performance of
    the QRNN, 10-fold cross validation has been used to estimate the
    performance impact of different hyperparameter configurations. Since the
    complete hyperparamter space is too large to be explored exhaustively,
    a joint grid search was performed to find the approximately optimal
-   structural hyperparameters. This was  followed by an optimization of the
-   training parameters for the best performing configuration found in the
-   first search.
+   structural hyperparameters (1), (2), (3). This was  followed by an
+   optimization of the training parameters (4), (5), (6) and (7) for the
+   best performing configuration found in the first search.
 
-   The full results for the grid search are given in Table
-   \ref{tab:model_selection} in the appendix. The results show a large
-   difference between using linear activations as opposed to non-linear
+   The full results for the grid search for optimal structural parameters are
+   given in Table \ref{tab:model_selection} in the appendix. The results show a
+   large difference between using linear activations as opposed to non-linear
    activations. This is expected since a linear network can only model linear
    relations and between the input variables. While the performance of the
-   networks with non-linear activations is comparable, the results show a slight
-   advantage for networks with ReLU activation functions. Performance is
-   significantly increased when going from one to two hidden layers as well as
-   to a width from 16 up to 64 but saturates for higher values. Based on these
-   results, a network with three hidden layers and 128 neurons each has been
-   chosen for the comparison against BMCI.
+   networks with non-linear activations is comparable, the results indicate a
+   performance advantage for networks with ReLU activation functions.
+   Performance is significantly increased when going from one to two hidden
+   layers as well as to a width from 16 up to 64 neurons but saturates for
+   higher values. Based on these results, a network with three hidden layers
+   and 128 neurons each has been chosen for the comparison against BMCI.
+
+   
 
 ** Results
 
