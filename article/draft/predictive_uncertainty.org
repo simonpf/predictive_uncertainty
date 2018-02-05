@@ -334,7 +334,7 @@
     rule (c.f. Section \ref{sec:scoring}) and using it as a learning criterion
     can thus be expected to yield well calibrated predictions.
 
-*** Bayesian Monte Carlo Integration
+** Bayesian Monte Carlo Integration
 
     The BMCI method is based on the use of importance sampling  to 
     approximate integrals over the posterior distribution. Consider an
@@ -662,20 +662,20 @@
    \begin{figure}[hbpt]
    \centering
    \begin{subfigure}{0.49\textwidth}
-   \includegraphics[width=\textwidth]{../plots/results_quantiles_100k}
+   \includegraphics[width=\textwidth]{../../plots/results_quantiles_100k}
    \caption{$n_\text{train} = 10^5$, simple QRNN}
    \end{subfigure}%
    \begin{subfigure}{0.49\textwidth}
-   \includegraphics[width=\textwidth]{../plots/results_quantiles_ensemble_100k}
+   \includegraphics[width=\textwidth]{../../plots/results_quantiles_ensemble_100k}
    \caption{$n_\text{train} = 10^5$, ensemble of QRNNs}
    \label{fig:scoresmape}
    \end{subfigure}
    \begin{subfigure}{0.49\textwidth}
-   \includegraphics[width=\textwidth]{../plots/results_quantiles}
+   \includegraphics[width=\textwidth]{../../plots/results_quantiles}
    \caption{$n_\text{train} = 10^6$, simple QRNN}
    \end{subfigure}%
    \begin{subfigure}{0.49\textwidth}
-   \includegraphics[width=\textwidth]{../plots/results_quantiles_ensemble}
+   \includegraphics[width=\textwidth]{../../plots/results_quantiles_ensemble}
    \caption{$n_\text{train} = 10^6$, ensemble of QRNNs}
    \label{fig:scoresmape}
    \end{subfigure}
@@ -731,22 +731,22 @@
    \begin{figure}[hbpt]
    \centering
    \begin{subfigure}{0.49\textwidth}
-   \includegraphics[width=\textwidth]{../plots/crps_100k}
+   \includegraphics[width=\textwidth]{../../plots/crps_100k}
    \caption{CRPS Distribution, $n_t = 10^5$}
    \label{fig:crps_dist_100k}
    \end{subfigure}%
    \begin{subfigure}{0.49\textwidth}
-   \includegraphics[width=\textwidth]{../plots/crps}
+   \includegraphics[width=\textwidth]{../../plots/crps}
    \caption{CRPS Distribution, $n_t = 10^6$}
    \label{fig:crps_dist}
    \end{subfigure}
    \begin{subfigure}{0.49\textwidth}
-   \includegraphics[width=\textwidth]{../plots/mean_crps}
+   \includegraphics[width=\textwidth]{../../plots/mean_crps}
    \caption{Mean CRPS Scores}
    \label{fig:mean_crps}
    \end{subfigure}%
    \begin{subfigure}{0.49\textwidth}
-   \includegraphics[width=\textwidth]{../plots/mape}
+   \includegraphics[width=\textwidth]{../../plots/mape}
    \caption{MAPE}
    \label{fig:mape}
    \end{subfigure}
@@ -765,7 +765,7 @@
   # Estimated Posterior CDFs
 
   \begin{figure}
-  \includegraphics[width = \textwidth]{../plots/posterior_cdfs_100k}
+  \includegraphics[width = \textwidth]{../../plots/posterior_cdfs_100k}
   \caption{Estimated cumulative posterior distributions using a training
            database containing $10^5$ entries. The empirical CDF obtained from
            MCMC simulation is displayed by the grey bars, BMCI and QRNN are
@@ -776,7 +776,7 @@
 
   # Estimated Posterior CDFs
   \begin{figure}
-  \includegraphics[width = \textwidth]{../plots/posterior_cdfs}
+  \includegraphics[width = \textwidth]{../../plots/posterior_cdfs}
   \caption{Estimated cumulative posterior distributions using a training
            database containing $10^6$ entries. The empirical CDF obtained from
            MCMC simulation is displayed by the grey bars, BMCI and QRNN are
@@ -789,7 +789,7 @@
   # Quantile Losses
 
   \begin{figure}
-  \includegraphics[width = \textwidth]{../plots/quantile_loss}
+  \includegraphics[width = \textwidth]{../../plots/quantile_loss}
   \caption{The quantile losses over the point value test set obtained using
            BMCI and QRNN.}
   \label{fig:quantile_loss}
@@ -808,7 +808,7 @@
      \begin{tabular}{|l|ccccccc|}
      \multicolumn{8}{c}{Linear}\\
      \hline
-     \input{../tables/linear.tbl}
+     \input{../../tables/linear.tbl}
      \end{tabular}
     \end{adjustbox}
 
@@ -817,7 +817,7 @@
      \begin{tabular}{|l|ccccccc|}
      \multicolumn{8}{c}{Sigmoid}\\
      \hline
-     \input{../tables/sigmoid.tbl}
+     \input{../../tables/sigmoid.tbl}
      \end{tabular}
     \end{adjustbox}
 
@@ -826,7 +826,7 @@
      \begin{tabular}{|l|ccccccc|}
      \multicolumn{8}{c}{tanh}\\
      \hline
-     \input{../tables/tanh.tbl}
+     \input{../../tables/tanh.tbl}
      \end{tabular}
     \end{adjustbox}
 
@@ -835,7 +835,7 @@
      \begin{tabular}{|l|ccccccc|}
      \multicolumn{8}{c}{ReLU}\\
      \hline
-     \input{../tables/relu.tbl}
+     \input{../../tables/relu.tbl}
      \end{tabular}
     \end{adjustbox}
 
@@ -851,4 +851,4 @@
 
 
 \bibliographystyle{apalike}
-\bibliography{literature}  
+\bibliography{../literature}  
