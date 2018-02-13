@@ -122,7 +122,13 @@ TEXT
 
 The retrieval of atmospheric quantities from remote sensing measurements
 constitutes an inverse problem and generally does not admit a unique, exact
-solution. In the Bayesian framework \citep{rodgers}, the solution of the inverse
+solution. Loss of information due to measurement error and imperfect resolution
+of the observation system forbid the assignment of a single, discrete solution
+to a given observation. While mathematically a solution can be obtained
+by reducing the dimensionality of the representation of the solution and/or
+applying regularization,
+
+ In the Bayesian framework \citep{rodgers}, the solution of the inverse
 problem is given by the posterior distribution $p(x | \vec{y})$, i.e. the conditional
 distribution of the retrieval quantity $x$ given the observation $\vec{y}$.
 Under the modeling assumptions, the posterior distribution represents all
