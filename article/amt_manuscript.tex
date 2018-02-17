@@ -78,7 +78,7 @@
 \Author[1]{Simon}{Pfreundschuh}
 \Author[1]{Patrick}{Eriksson}
 \Author[1]{David}{Duncan}
-\Author[2]{Nina}{H\aakansson}
+\Author[2]{Nina}{H{\aa}kansson}
 \Author[2]{Anke}{Thoss}
 
 \affil[1]{Department of Earth Space and Environment, Chalmers University of Technology, SE-41296 Gothenburg, Sweden}
@@ -122,81 +122,115 @@ TEXT
 
 The retrieval of atmospheric quantities from remote sensing measurements
 constitutes an inverse problem and generally does not admit a unique, exact
-solution. Loss of information due to measurement error and imperfect resolution
-of the observation system forbid the assignment of a single, discrete solution
-to a given observation. While mathematically a solution can be obtained
-by reducing the dimensionality of the representation of the solution and/or
-applying regularization,
+solution. Measurement and modeling errors as well as limited sensitivity of the
+observation system forbid the assignment of a single, discrete solution to a
+given observation. A meaningful retrieval should thus consist of a retrieved
+value and an estimate of uncertainty describing a range of values that are
+likely to produce a measurement similar to the one observed. However, even
+if a retrieval method allows for explicit modeling of retrieval uncertainties,
+their computation and representation is often possible only in an approximate
+manner.
 
- In the Bayesian framework \citep{rodgers}, the solution of the inverse
-problem is given by the posterior distribution $p(x | \vec{y})$, i.e. the conditional
-distribution of the retrieval quantity $x$ given the observation $\vec{y}$.
-Under the modeling assumptions, the posterior distribution represents all
-available knowledge about the retrieval quantity $x$ after the measurement has
-been performed including all retrieval uncertainties.
+The Bayesian framework provides a formal way of handling the ill-posedness of
+the retrieval problem and its associated uncertainties. In the Bayesian
+formulation \citep{rodgers}, the solution of the inverse problem is given by the
+a posteriori distribution $p(x | \vec{y})$, i.e. the conditional distribution of
+the retrieval quantity $x$ given the observation $\vec{y}$. Under the modeling
+assumptions, the posterior distribution represents all available knowledge about
+the retrieval quantity $x$ after the measurement including all retrieval
+uncertainties. Bayes' theorem states that the a posteriori distribution is
+proportional to the product $p(\vec{y} | x)p(x)$ of the a priori distribution
+$p(x)$ and the conditional probability of the observed measurement $p(\vec{y} |
+x)$. The a priori distribution $p(x)$ represents knowledge that is available
+about the quantity $x$ before the measurement and can be used to aid the
+retrieval with supplementary information.
 
-In cases that allow a sufficiently precise and efficient modeling of the transmission
-of the measured radiation through the atmosphere, a forward model can be used to guide the
-solution of the inverse problem. If such a forward model is available, Markov chain
-Monte Carlo (MCMC) methods can be used to compute the posterior distribution
-requiring only the specification of a priori knowledge and measurement uncertainties
-in terms of easily computable probability distributions. In general, however, the
-computation of the full posterior distribution using MCMC methods is computationally
-too demanding to be practical.
+The a posteriori distribution of a retrieval can generally not be expressed in
+closed form and different methods have been developed to compute the distribution
+or approximations of it.
 
-The optimal estimation method \citep{rodgers}, OEM in short,
-simplifies the retrieval problem assuming that a priori knowledge and
+In cases that allow a sufficiently precise and efficient simulation of the
+transmission of the measured radiation through the atmosphere, a forward model
+can be used to guide the solution of the inverse problem. If such a forward
+model is available, the most general method to compute the a posteriori
+distribution are Markov chain Monte Carlo (MCMC) simulations. MCMC simulations
+provide a way of iteratively generating samples from the a posteriori
+distribution requiring only the specification of a priori knowledge and
+measurement uncertainties in terms of easily computable probability
+distributions. The disadvantage of MCMC simulations is that each retrieval
+requires multiple evaluations of the forward model, which makes the method in
+many cases computationally too demanding to be used in production.
+
+A method that avoids potentially costly forward model evaluations during
+the retrieval has been proposed by \cite{kummerow_1}. The method is based on
+Monte Carlo integration of importance weighted samples in a retrieval database
+$\{(\vec{y}_i, x_i)\}_{i = 0}^n$, which consists of pairs of observations $\vec{y}_i$
+and corresponding values $x_i$ of the retrieval quantity $x$. The method will be
+referred to in the following as Bayesian Monte Carlo integration (BMCI).
+Eventhough the method is in general computationally less demanding than methods
+involving forward model calculations during the retrieval, it may require the
+traversal of a potentially large retrieval database. Furthermore, the
+incorporation of ancillary data to aid the retrieval requires careful
+stratification of the retrieval database, as it is performed in the GPROF
+\citep{gprof} algorithm for the retrieval of rain profiles from GMI
+measurements. Further applications of the method can be found for example in the
+work by Rydberg (\citeyear{rydberg_2, rydberg_1}) or \cite{evans_2}.
+
+The optimal estimation method \citep{rodgers}, in short OEM (also MAP, 1DVAR),
+simplifies the Bayesian retrieval problem assuming that a priori knowledge and
 measurement uncertainty can be described by Gaussian distributions and that the
-forward model is only moderately non-linear. Given these assumptions, the a
-posteriori distribution is approximately Gaussian and is hence fully specified
-by its expectation value and covariance matrix. In cases where an efficient
-forward model for the computation of simulated measurements and corresponding
-Jacobians is available, the OEM has become the quasi standard method for Bayesian
-retrievals. Nonetheless, even neglecting the validity of the assumptions of
-Gaussianity and linearity, the method is unsuitable for retrievals that involve
-complex radiative processes. An example of such processes is the scattering
-of mircowave radiation by ice clouds, which is generally too expensive to model
-online during the retrieval.
+forward model is only moderately non-linear. Under these assumptions, the a
+posteriori distribution is approximately Gaussian and can be represented by its
+mean value and covariance matrix. The retrieved values in this case are the mean
+and maximum of the a posteriori distribution, which coincide for a Gaussian
+distribution, as well as the covariance matrix describing the uncertainties in
+the retrieval. In cases where an efficient forward model for the computation of
+simulated measurements and corresponding Jacobians is available, the OEM has
+become the quasi standard method for Bayesian retrievals. Nonetheless, even
+neglecting the validity of the assumptions of Gaussianity and linearity, the
+method is unsuitable for retrievals that involve complex radiative processes. An
+example of such processes is the scattering of mircowave radiation by ice
+clouds, which is generally too expensive to model online during the retrieval.
 
-\cite{kummerow_1} propose a Bayesian retrieval method that avoids the assumption
-of Gaussianity of the a priori distribution as well as the computational
-complexity associated with the evaluation of the forward model during the
-retrieval. The method is based on Monte Carlo integration of importance weighted
-samples in a retrievel database $\{(\vec{y}_i, x_i)\}_{i = 0}^n$ consisting of
-pairs of observations $\vec{y}_i$ and corresponding values $x_i$ of the
-retrieval quantity $x$. The method will be referred to in the following as
-Bayesian Monte Carlo integration (BMCI). Eventhough the method is in general
-computationally less demanding than methods involving forward model calculations
-during the retrieval, it may require the traversal of a potentially large
-retrieval database. Furthermore, the incorporation of ancillary data to aid the
-retrieval requires careful stratification of the retrieval database, as it is
-performed in the GPROF \citep{gprof} algorithm for the retrieval of rain
-profiles from GMI measurements. Further applications of the method can be
-found for example in the work by Rydberg (\citeyear{rydberg_2, rydberg_1})
-or \cite{evans_2}.
+In contrast to the Bayesian retrieval methods discussed above, machine learning
+provides a highly flexible approach to learn computationally efficient retrieval
+mappings directly from data. Recent advances in machine learning have shown that
+these methods are capable of learning complex relationships directly from
+low-level data \citep{lecun}. Large amounts of training data from simulations,
+collocated observations or in situ measurement as well as increasing amounts of
+computational power available for training have made machine learning techniques
+an interesting alternative to approaches based on (Bayesian) inverse modeling.
+Numerous applications of deep learning regression methods to retrieval problems
+can be found in recent literature \citep{holl, strandgren, hakansson}. All of
+these examples, however, neglect the probabilistic character of the inverse
+problem and provide only a scalar estimate of the retrieval. Uncertainty
+estimates in these retrievals are provided in the form of expected errors
+computed on independent test data, which is a clear drawback compared to
+Bayesian methods.
 
-In contrast to these more formally motivated methods, machine learning provides a
-highly flexible approach to learn computationally efficient retrieval mappings
-directly from data. Numerous applications of deep learning regression methods
-to retrieval problems can be found in recent literature \citep{holl, strandgren, hakansson}.
-Most of these examples, however, neglect the probabilistic character of the inverse problem
-and provide only a scalar estimate of the retrieval. Uncertainty estimates in these
-retrievals are provided in the form of expected errors computed on independent test data,
-which is a clear drawback compared to Bayesian methods.
+In this article, quantile regression neural networks (QRNNs) are proposed as a
+method to use deep neural networks to estimate the posterior distribution of
+remote sensing retrievals. The aim of this approach is to combine the
+flexibility and computational efficiency of machine learning methods with the
+theoretrically sound handling of uncertainties in the Bayesian framework. 
 
-In this article, quantile regression neural networks (QRNNs) are proposed as a method to use
-deep neural networks to estimate the posterior distribution of remote sensing
-retrievals. A synthetic retrieval case is used to validate the estimates of the
-posterior distribution against MCMC simulations and the BMCI method. Moreover
-QRNNs are applied to a real world retrieval of cloud pressure from MODIS
-observations. It is demonstrated how QRNNs can be used to obtain statistically
-consistent, case-specific estimates of uncertainty.
-
+After a formal description of QRNNs and the retrieval methods used to validate
+the proposed approach in Section~\ref{sec:methods}, the implementation of the
+methods in software is described in Section~\ref{sec:implementation}. In
+Section~\ref{sec:synthetic}, a synthetic retrieval case is used to validate the
+estimates of the posterior distribution against MCMC simulations and the BMCI
+method. Finally, QRNNs are applied to a real world retrieval of cloud pressure
+from MODIS observations in Section~\ref{sec:ctp}.
 
 \section{Methods}
+\label{sec:methods}
 
-This section introduces the general retrieval formulation and the retrieval methods
-used in the subsequent experiments.
+This section introduces the Bayesian retrieval formulation and the retrieval methods
+used in the subsequent experiments. Two methods, Markov chain Monte Carlo simulations
+and Baysesian Monte Carlo integration, for the computation of Bayesian a posteriori
+distributions are presented. Furthermore, quantile regression neural networks are
+presented as a machine learning based approach to estimate the a posteriori distribution
+of Bayesian retrieval problems.
 
 \subsection{The Retrieval Problem}
 
@@ -206,130 +240,179 @@ vector $\vec{y} \in \mathrm{R}^m$. In the Bayesian framework, the retrieval prob
 formulated as finding the posterior distribution $p(x | \vec{y})$ of the
 quantity $x$ given the measurement $\vec{y}$. Formally, this solution can be
 obatined by application of Bayes theorem:
-\begin{align}
-  p(x | \vec{y}) \propto p(\vec{y} | x)p(x)
-\end{align}
+\begin{equation}\label{eq:bayes}
+  p(x | \vec{y}) = \frac{p(\vec{y} | x)p(x)}{\int p(x', \vec{y}) dx'}
+\end{equation}
 The a priori distribution $p(x)$ represents the knowledge about the quantity $x$ that
 is available prior to the measurement. The a priori knowledge introduced into the
 retrieval formulation acts as a regularizer on the ill-posed inverse problem and
 ensures that the retrieval solution is physically meaningful.
+If the retrieval quantity $x$ is a scalar, a convenient representation of the a
+posteriori distribution is its cumulative distribution function
+(CDF) $F_{x | \vec{y}}(x)$, which is defined as
+\begin{equation*}
+F_{x | \vec{y}}(x) = \int_{-\infty}^{\infty} p(x | \vec{y}) \: dx.
+\end{equation*}
 
-\subsection{Markov Chain Monte Carlo}
+\subsection{Bayesian Retrieval Methods}
+
+The a posteriori distribution in Equation (\ref{eq:bayes}) can generally not
+be computed or sampled from directly. In the following two methods are presented
+that are commonly used to compute the a posteriori distribution of Bayesian remote
+sensing retrievals.
+
+\subsubsection{Markov Chain Monte Carlo}
 
     Markov Chain Monte Carlo (MCMC) or Markov Chain simulation is a method
-    to generate samples from arbitrary posterior distributions $p(x | \vec{y}$).
+    to generate samples from arbitrary posterior distributions $p(x | \vec{y})$.
     It is based on drawing samples from an approximate distribution and
     refining these in a way such that the resulting sample distribution
-    converges to the true distribution \citep{bda}. The method allows
-    direct sampling from the posterior distribution, at least in an
-    asymptotic sense, which is why it is used here as validation baseline
-    for the two other methods.
+    converges to the true distribution \citep{bda}.
 
-\subsubsection{Neural Networks}
+    In this study, the Metropolis algorithm is used to implement MCMC. The
+    Metropolis algorithm iteratively generates a sequence of states $\vec{x}_0,
+    \vec{x}_1, \ldots$ based on a symmetric proposal distribution
+    $J_t(\vec{x}^* | \vec{x}_{t-1})$. In each step of the algorithm, the
+    distribution $J_t(\vec{x}^* | \vec{x}_{t-1})$ is used to generate a new
+    proposal state $\vec{x}^*$ given the current state $\vec{x}_{t-1}$ of the simulation.
+    The proposed state $\vec{x}^*$ is accepted ($\vec{x}_t = \vec{x}^*$) with
+    probability $\text{min} \left \{1, \frac{p(\vec{x}^x |
+      \vec{y})}{p(\vec{x}_{t-1} | \vec{y})} \right \}$. Otherwise it is rejected
+    ($\vec{x}_t = \vec{x}_{t-1}$).
 
-  A neural networks is a computing model that computes a vector of output
-  activations $\vec{y}$ from a vector of input activations $\vec{x}$. In their
-  simplest form, feed-forward artificial neural networks (ANNs) compute the
-  vector $\vec{y}$ by application of a given number of subsequent, learnable
-  transformations to the input activations $\vec{x}$:
-    \begin{align}
-        \vec{x}_0 &= \vec{x}\\
-        \vec{x}_i &= f_{i}
-        \left ( \vec{W}_{i} \vec{x}_{i - 1}+ \vec{\theta}_i \right ) \\
-        \vec{y} &= \vec{x}_{n}
-    \end{align}
-    The activation functions $f_i$ as well as the number and sizes of the
-    hidden layers $\vec{x}_i$ are fixed, structural parameters of a neural
-    network model. The learnable parameters of the model are the weight
-    matrices $\vec{W}_i$ and bias vectors $\vec{\theta}_i$ of each layer. The
-    training of the neural network is performed by minimizing a given loss
-    function over a training set consisting of pairs of inputs and corresponding
-    expected outputs.
+    If the proposal distribution is symmetric and satisfies the Markov chain property, the
+    samples generated using the Metropolis algorithm are guaranteed to converge to the
+    true a posteriori distribution. 
 
-    If the estimand $\vec{y}$ is interpreted as a random vector, the neural
-    network can be trained to estimate statistical properties of the conditional
-    distribution $p(\vec{y} | \vec{x})$. Which property the network learns to
-    estimate can be controlled through the choice of the loss function. Training a
-    neural network using a mean squared error loss function may be viewed as
-    learning a maximum likelihood estimator of the mean of a conditional
-    Gaussian distribution with fixed standard deviation \citep{bishop_mdn}.
-    This observation is the starting point for the application of neural networks
-    to the retrieval of Bayesian a posteriori distributions.
+\subsubsection{Bayesian Monte Carlo Integration}
 
-    Neural networks can be applied to learn a retrieval mapping
-    that maps an observation vector $\vec{y}$ to a retrieval quantity $x$.
-    Unfortunately, the traditional notation of both fields uses $\vec{x}, \vec{y}$
-    for opposing concepts. For the remainder of this article the
-    traditional notation for inverse problems will be adopted and the neural network
-    will thus be used to predict a retrieval quantity $x$ from a vector of
-    observations $\vec{y}$.
+    The BMCI method is based on the use of importance sampling to approximate
+    integrals over the a posteriori distribution of a given retrieval case. Consider an
+    integral of the form
+    \begin{equation}\label{eq:bmci_int}
+     \int f(x') p(x'|\vec{y}) \: dx'.
+    \end{equation}
+    Applying Bayes' theorem, the integral can be written as
+    \begin{equation*}
+    \int f(x') \frac{p(x'|\mathbf{y}) p(x')}{p(\vec{y})} \: dx' &=
+    \int f(x') \frac{p(\vec{y} | x')p(x')}
+                    {\int p(\vec{y} | x'') \: dx''} \: dx'.
+    \end{equation*}
+    The last integral can be approximated by a sum over an observation
+    database $\{(\vec{y}_i, x_i)\}_{i = 1}^n$ that is distributed according
+    to the a priori distribution $p(x)$:
+    \begin{equation*}
+    \int f(x') p(x' | \vec{y}) \: dx' & = \frac{1}{C}  \sum_{i = 1}^n w_i(\mathbf{y}) f(x_i)
+            .
+    \end{equation*}
+    The weights $w_i(\vec{y})$ are proportional to the probability
+    of the observed measurement $\vec{y}$ conditional on the database
+    measurement $\vec{y_i}$, which is usually assumed to be multivariate
+    Gaussian with covariance matrix $\vec{S}_o$:
+    \begin{equation*}
+    w_i(\vec{y}) = \frac{1}{C} \exp \left \{- \frac{(\vec{y} - \vec{y}_i)^T \vec{S}_o^{-1}
+                                       (\vec{y} - \vec{y}_i)}{2} \right \}
+    \end{equation*}
+    The normalization factor $C$ is given by $C = \sum_{i = 1}^n w_i(\vec{y}).$ By
+    approximating integrals of the form (\ref{eq:bmci_int}), it is possible to
+    estimate expectation value and variance of the posterior distribution by choosing $f(x) =
+    x$ and $f(x) = (x - \mathcal{E}(x | \vec{y}))^2$, respectively. Likewise it
+    is possible to approximate the cumulative density function of the posterior
+    using
+    \begin{equation}
+    \label{eq:cdf}
+    F_{x | \vec{y}}(x) &= \int_{-\infty}^x  p(x') \: dx'\approx \sum_{x_i < x}^n w_i(\mathbf{y}).
+    \end{equation}
+
+\subsection{Machine Learning}
+
+In the field of machine learning, regression problems are typically approached
+by training a parametrized model $f: \vec{x} \mapsto \vec{y}$ to predict a
+desired output $\vec{y}$ from given input $\vec{x}$.
+
+Unfortunately, the use of the variables $\vec{x}$ and $\vec{y}$ in
+machine learning is directly opposite to their use in inverse theory. However,
+for the remainder of this section the variables $\vec{x}$ and $\vec{y}$ will be
+used to denote, respectively, the input and output to the machine learning model
+in order to be consistent with the common notation in the field of machine
+learning. The reader must just keep in mind that the method is applied in the
+later sections to predict a retrieval quantity $x$ from a measurement $\vec{y}$.
+
+\subsubsection{Supervised Learning and Loss Functions}
+
+A common way of training machine learning methods is supervised training, in which
+the machine learning model $f$ is trained on a training set
+$\{\vec{x}_i, \vec{y}_i\}_{i = 1}^n$ consisting of input values $\vec{x}_i$ and
+corresponding expected output values $\vec{y}_i$. The training is performed by
+finding model parameters that minimize the mean of a given loss function
+$\mathcal{L}(f(\vec{x}), \vec{y})$ on the training set.
+
+The arguably most common loss function for regression tasks is the
+squared error loss 
+\begin{equation}
+  \mathcal{L}_{se}(f(\vec{x}), \vec{y}) &= (f(\vec{x}) - \vec{y})^T (f(\vec{x}) - \vec{y}),
+\end{equation}
+which trains the model $f$ to minimize the mean squared distance
+of the neural network prediction $f(\vec{x})$ from the expected output
+$\vec{y}$.
+If the estimand $\vec{y}$ is a random vector drawn from a conditional
+probability distribution $p(\vec{y} | \vec{x})$, a regressor trained using a
+sqared error loss function learns to predict the conditional expectation value of
+the distribution $p(\vec{y} | \vec{x})$ \citep{bishop_mdn}. Depending on the
+choice of the loss function, it is also possible to learn other statistics of
+the distribution $p(\vec{y} | \vec{x})$ from the training data.
 
 \subsubsection{Quantile Regression}
 
     Given the cumulative density function $F(x)$ of a probability distribution
     $p$, its $\tau\text{th}$ quantile $x_\tau$ is defined as
     \begin{align}
-    x_\tau = F^{-1}(\tau) &= \inf \{x \: : \: F(x) \geq \tau \},
+    x_\tau &= \inf \{x \: : \: F(x) \geq \tau \},
     \end{align}
     i.e. the greatest lower bound of all values of $x$ for which $F(x) \geq \tau$.
-    As it has been shown by \citep{koenker}, the $\tau\text{th}$ quantile $x_\tau$ of $F$
+    As it has been shown by \citet{koenker}, the $\tau\text{th}$ quantile $x_\tau$ of $F$
     minimizes the expectation value $\mathcal{E}_x\left ( \mathcal{L}_\tau(x_\tau, x) \right) = \int_{-\infty}^\infty \mathcal{L}_\tau(x_\tau, x') p(x') \: dx'$
     of the function
     \begin{align}\label{eq:quantile_loss}
-      \mathcal{L}_{\tau}(x_\tau, x) &=  (x - x_\tau)(\tau - I_{x < x_\tau}).
+      \mathcal{L}_{\tau}(x_\tau, x) &=
+      \begin{cases}
+        \tau |x - x_\tau|, & x_\tau < x \\
+        (1 - \tau)|x - x_\tau|, &\text{otherwise}
+        \end{cases}
     \end{align}
 
-    By training a machine learning regression method to minimize the
-    loss function $\mathcal{L}_\tau(x_\tau, x)$ over a training set
-    $\{\vec{y}_i, x_i\}_{i = 1}^n$, the regressor learns to predict
-    the quantiles of the conditional distribution $p(x | \vec{y})$
-    of the output $x$ given the input $\vec{y}$. Hence, all that is required
-    to predict the quantiles of a conditional distribution $p(x | \vec{y})$
-    using a neural network is to use the quantile loss function
-    $\mathcal{L}_\tau(x_\tau, x)$ for the training of the network.
+    By training a machine learning regressor $f$ to minimize the quantile loss
+    function $\mathcal{L}_\tau(f(\vec{x}), y)$ over a training set $\{\vec{x}_i,
+    y_i\}_{i = 1}^n$, the regressor learns to predict the quantiles of the
+    conditional distribution $p(y | \vec{x})$. This can be extended to obtain an
+    approximation of the cumulative distribution function of $F_{y | \vec{x}}(y)$ by
+    training the network to estimate multiple quantiles of $p(y | \vec{x})$.
+
+\subsubsection{Neural Networks}
+
+A neural networks is a computing model that computes a vector of output
+activations $\vec{y}$ from a vector of input activations $\vec{x}$. Feed-forward
+artificial neural networks (ANNs) compute the
+vector $\vec{y}$ by application of a given number of subsequent, learnable
+transformations to the input activations $\vec{x}$:
+\begin{align*}
+    \vec{x}_0 &= \vec{x}\\
+    \vec{x}_i &= f_{i}
+    \left ( \vec{W}_{i} \vec{x}_{i - 1}+ \vec{\theta}_i \right ) \\
+    \hat{\vec{y}} &= \vec{x}_{n}
+\end{align*}
+The activation functions $f_i$ as well as the number and sizes of the
+hidden layers $\vec{x}_1, \ldots, \vec{x}_{n-1}$ are fixed, structural parameters of a neural
+network model. The learnable parameters of the model are the weight
+matrices $\vec{W}_i$ and bias vectors $\vec{\theta}_i$ of each layer.
+
+Neural networks can be efficiently trained in a supervised manner by using
+gradient based minimization methods to find suitable weights $\vec{W}_i$ and
+bias vectors $\vec{\theta}_i$. Hence, all that is required to use a neural networks
+for quantile regression is the use of the mean quantile loss function
+$\mathcal{L}_\tau$ as minimzation criterion during the training of network.
     
-    
-
-\subsubsection{Bayesian Monte Carlo Integration}
-
-    The BMCI method is based on the use of importance sampling to approximate
-    integrals over the posterior distribution of a given retrieval case. Consider an
-    integral of the form
-    \begin{align}\label{eq:bmci_int}
-     \int f(x') p(x'|\vec{y}) \: dx'.
-    \end{align}
-    Applying Bayes' theorem, the integral can be written as
-    \begin{align}
-    \int f(x') \frac{p(x'|\mathbf{y}) p(x')}{p(\vec{y})} \: dx' &=
-    \int f(x') \frac{p(\vec{y} | x')p(x')}
-                    {\int p(\vec{y} | x'') \: dx''} \: dx'.
-    \end{align}
-    The last integral can be approximated by a sum over an observation
-    database $\{(\vec{y}_i, x_i)\}_{i = 1}^n$ that is distributed according
-    to the a priori distribution $p(x)$:
-    \begin{align}
-    \int f(x') p(x' | \vec{y}) \: dx' & = \frac{1}{C}  \sum_{i = 1}^n w_i(\mathbf{y}) f(x_i)
-            .
-    \end{align}
-    The weights $w_i(\vec{y})$ are proportional to the probability
-    of the observed measurement $\vec{y}$ conditional on the database
-    measurement $\vec{y_i}$, which is usually assumed to be Gaussian:
-    \begin{align}
-    w_i(\vec{y}) = \frac{1}{C} \exp \left \{- \frac{(\vec{y} - \vec{y}_i)^T \vec{S}_o^{-1}
-                                       (\vec{y} - \vec{y}_i)}{2} \right \}
-    \end{align}
-    The normalization factor $C$ is given by $C = \sum_{i = 1}^n w_i(\vec{y}).$ By
-    approximating integrals of the form (\ref{eq:bmci_int}), it is possible to
-    estimate mean and variance of the posterior distribution by choosing $f(x) =
-    x$ and $f(x) = (x - \mathcal{E}(x | \vec{y}))^2$, respectively. Likewise it
-    is possible to approximate the cumulative density function of the posterior
-    using
-    \begin{align}
-    \label{eq:cdf}
-    F(x) &= \int_{-\infty}^x  p(x') \: dx'\approx \sum_{x_i < x}^n w_i(\mathbf{y}).
-    \end{align}
-
-\subsubsection{Evaluating Probabilistic Predictions}
+\subsection{Evaluating Probabilistic Predictions}
 
   A problem that remains is how to compare two estimated posterior distributions
   $p'(x | \vec{y}), p''(x | \vec{y})$ against a single sample $x$ from the true
@@ -409,6 +492,21 @@ ensures that the retrieval solution is physically meaningful.
    retrieval is discarded if the values are not smaller than 1.1 and larger than
    100, respectively.
    
+\subsection{Bayesian Monte Carlo Integration}
+
+  Also the BMCI method has been implemented in python and integrated into the
+  typhon package. The implementation provides functionality to speed up
+  calculations by excluding entries that are guaranteed to have a smaller weight
+  than a given limit. For the experiments presented below this was not used
+  since computational performance was not considered critical. In addition to
+  retrieving the first two moments of the posterior distribution, the
+  implementation also provides functionality to retrieve the posterior CDF using
+  Equation (\ref{eq:cdf}). Approximate posterior quantiles are computed by
+  interpolating the inverse CDF at the desired quantile values. To compute the
+  CRPS score for a given retrieval, the trapezoidal rule is used to perform the
+  integral over the values $x_i$ in the retrieval database $\{\vec{y}_i,
+  x_i\}_{i = 1}^n$.
+
 \subsection{Quantile Regression Neural Networks}
 
     The implementation of quantile regression neural networks that has been
@@ -464,20 +562,6 @@ ensures that the retrieval solution is physically meaningful.
    This approximation is also used to compute the CRPS score on the test
    data.
 
-\subsection{Bayesian Monte Carlo Integration}
-
-  Finally, also the BMCI method has been implemented in python and integrated
-  into the typhon package. The implementation provides functionality to speed up
-  calculations by excluding entries that are guaranteed to have a smaller weight
-  than a given limit. For the experiments presented below this was not used
-  since computational performance was not considered critical. In addition to
-  retrieving the first two moments of the posterior distribution, the
-  implementation also provides functionality to retrieve the posterior CDF using
-  Equation (\ref{eq:cdf}). Approximate posterior quantiles are computed by
-  interpolating the inverse CDF at the desired quantile values. To compute the
-  CRPS score for a given retrieval, the trapezoidal rule is used to perform the
-  integral over the values $x_i$ in the retrieval database
-  $\{\vec{y}_i, x_i\}_{i = 1}^n$.
 
 
 \section{Application to a Synthetic Retrieval Case}
@@ -708,6 +792,7 @@ training set size of $10^5$ which is an order of magnitude less training data
 than BMCI requires to reach its performance maximum.
 
 \section{Retrieving Cloud Top Pressure from MODIS using QRNNs}
+\label{sec:ctp}
 
 In this section QRNNs are applied to retrieve cloud top pressure from MODIS
 observations. This experiment is based on the work by \cite{hakansson} who
