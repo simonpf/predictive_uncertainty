@@ -146,20 +146,26 @@ about the quantity $x$ before the measurement and can be used to aid the
 retrieval with supplementary information.
 
 The a posteriori distribution of a retrieval can generally not be expressed in
-closed form and different methods have been developed to compute the distribution
-or approximations of it.
-
-In cases that allow a sufficiently precise and efficient simulation of the
-transmission of the measured radiation through the atmosphere, a forward model
-can be used to guide the solution of the inverse problem. If such a forward
-model is available, the most general method to compute the a posteriori
-distribution are Markov chain Monte Carlo (MCMC) simulations. MCMC simulations
-provide a way of iteratively generating samples from the a posteriori
-distribution requiring only the specification of a priori knowledge and
-measurement uncertainties in terms of easily computable probability
-distributions. The disadvantage of MCMC simulations is that each retrieval
-requires multiple evaluations of the forward model, which makes the method in
-many cases computationally too demanding to be used in production.
+closed form and different methods have been developed to compute or approximate
+it. In cases that allow a sufficiently precise and efficient simulation of the
+transfer of the measured radiation and its detection through the atmosphere, a
+forward model can be used to guide the solution of the inverse problem. If such
+a forward model is available, the most general method to compute the a
+posteriori distribution are Markov chain Monte Carlo (MCMC) simulations. MCMC
+simulations provide a way of estimating the a posteriori distribution $p(x |
+vec{y})$ by iteratively generating samples from the a posteriori distribution,
+requiring only the specification of a priori knowledge and measurement
+uncertainties in terms of easily computable probability distributions. MCMC
+simulations have the advantage of allowing the estimation of the a posteriori
+distribution without any further assumption on a priori knowledge, measurement
+error or the forward model in a way that is guaranteed to converge to the true
+posterior distribution. The method is therefore used here to validate the
+estimated a posteriori distribution obtained from the other two approximate
+methods. The disadvantage of MCMC simulations is that each retrieval requires a
+high number of forward model evaluations, which makes the method in many cases
+computationally too demanding to be used in production. For remote sensing
+retrievals the method is therefore of interest rather for testing and validation
+ \citep{tamminen}, such as in the retrieval algorithm developed by \cite{evans_2}.
 
 A method that avoids potentially costly forward model evaluations during
 the retrieval has been proposed by \cite{kummerow_1}. The method is based on
@@ -172,7 +178,7 @@ involving forward model calculations during the retrieval, it may require the
 traversal of a potentially large retrieval database. Furthermore, the
 incorporation of ancillary data to aid the retrieval requires careful
 stratification of the retrieval database, as it is performed in the GPROF
-\citep{gprof} algorithm for the retrieval of rain profiles from GMI
+algorithm \citep{gprof} for the retrieval of rain profiles from GMI
 measurements. Further applications of the method can be found for example in the
 work by Rydberg (\citeyear{rydberg_2, rydberg_1}) or \cite{evans_2}.
 
