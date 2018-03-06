@@ -108,6 +108,7 @@
 
 \maketitle
 
+\newcounter{enumic}
 
 
 \begin{abstract}
@@ -121,7 +122,7 @@ TEXT
 \introduction  %% \introduction[modified heading if necessary]
 
 The retrieval of atmospheric quantities from remote sensing measurements
-constitutes an inverse problem and generally does not admit a unique, exact
+constitutes an inverse problem that generally does not admit a unique, exact
 solution. Measurement and modeling errors as well as limited sensitivity of the
 observation system forbid the assignment of a single, discrete solution to a
 given observation. A meaningful retrieval should thus consist of a retrieved
@@ -137,7 +138,7 @@ formulation \citep{rodgers}, the solution of the inverse problem is given by the
 a posteriori distribution $p(x | \vec{y})$, i.e. the conditional distribution of
 the retrieval quantity $x$ given the observation $\vec{y}$. Under the modeling
 assumptions, the posterior distribution represents all available knowledge about
-the retrieval quantity $x$ after the measurement including all retrieval
+the retrieval quantity $x$ after the measurement, accounting for all retrieval
 uncertainties. Bayes' theorem states that the a posteriori distribution is
 proportional to the product $p(\vec{y} | x)p(x)$ of the a priori distribution
 $p(x)$ and the conditional probability of the observed measurement $p(\vec{y} |
@@ -145,48 +146,46 @@ x)$. The a priori distribution $p(x)$ represents knowledge that is available
 about the quantity $x$ before the measurement and can be used to aid the
 retrieval with supplementary information.
 
-The a posteriori distribution of a retrieval can generally not be expressed in
-closed form and different methods have been developed to compute or approximate
-it. In cases that allow a sufficiently precise and efficient simulation of the
-transfer of the measured radiation and its detection through the atmosphere, a
-forward model can be used to guide the solution of the inverse problem. If such
-a forward model is available, the most general method to compute the a
-posteriori distribution are Markov chain Monte Carlo (MCMC) simulations. MCMC
-simulations provide a way of estimating the a posteriori distribution $p(x |
-vec{y})$ by iteratively generating samples from the a posteriori distribution,
-requiring only the specification of a priori knowledge and measurement
-uncertainties in terms of easily computable probability distributions. MCMC
-simulations have the advantage of allowing the estimation of the a posteriori
-distribution without any further assumption on a priori knowledge, measurement
-error or the forward model in a way that is guaranteed to converge to the true
-posterior distribution. The method is therefore used here to validate the
-estimated a posteriori distribution obtained from the other two approximate
-methods. The disadvantage of MCMC simulations is that each retrieval requires a
-high number of forward model evaluations, which makes the method in many cases
-computationally too demanding to be used in production. For remote sensing
-retrievals the method is therefore of interest rather for testing and validation
- \citep{tamminen}, such as in the retrieval algorithm developed by \cite{evans_2}.
+For a given retrieval, the a posteriori distribution can generally not be
+expressed in closed form and different methods have been developed to compute
+approximations to it. In cases that allow a sufficiently precise and efficient
+simulation of the measurement, a forward model can be used to guide the solution
+of the inverse problem. If such a forward model is available, the most general
+technique to compute the a posteriori distribution is Markov chain Monte Carlo
+(MCMC) simulation. MCMC denotes a set of methods that iteratively generate a
+sequence of samples, whose sampling distribution approximates the true a
+posteriori distribution. MCMC simulations have the advantage of allowing the
+estimation of the a posteriori distribution without requiring any simplifying
+assumptions on a priori knowledge, measurement error or the forward model. Since
+the generated distribution is guaranteed to converge to the true posterior
+distribution, the method is used here as ground truth to validate the other
+methods. The disadvantage of MCMC simulation is that each retrieval requires a
+high number of forward model evaluations, which in many cases makes the method
+computationally too demanding to be practical. For remote sensing retrievals the
+method is of interest rather for testing and validation \citep{tamminen}, such
+as for example in the retrieval algorithm developed by \cite{evans_2}.
 
-A method that avoids potentially costly forward model evaluations during
-the retrieval has been proposed by \cite{kummerow_1}. The method is based on
-Monte Carlo integration of importance weighted samples in a retrieval database
-$\{(\vec{y}_i, x_i)\}_{i = 0}^n$, which consists of pairs of observations $\vec{y}_i$
-and corresponding values $x_i$ of the retrieval quantity $x$. The method will be
-referred to in the following as Bayesian Monte Carlo integration (BMCI).
-Eventhough the method is in general computationally less demanding than methods
+A method that avoids costly forward model evaluations during the retrieval has
+been proposed by \cite{kummerow_1}. The method is based on Monte Carlo
+integration of importance weighted samples in a retrieval database
+$\{(\vec{y}_i, x_i)\}_{i = 0}^n$, which consists of pairs of observations
+$\vec{y}_i$ and corresponding values $x_i$ of the retrieval quantity $x$. The
+method will be referred to in the following as Bayesian Monte Carlo integration
+(BMCI). Eventhough the method is less computationally demanding than methods
 involving forward model calculations during the retrieval, it may require the
 traversal of a potentially large retrieval database. Furthermore, the
 incorporation of ancillary data to aid the retrieval requires careful
-stratification of the retrieval database, as it is performed in the GPROF
-algorithm \citep{gprof} for the retrieval of rain profiles from GMI
-measurements. Further applications of the method can be found for example in the
-work by Rydberg (\citeyear{rydberg_2, rydberg_1}) or \cite{evans_2}.
+stratification of the retrieval database, as it is performed in the Goddard
+Profiling Algorithm \citep{gprof} for the retrieval of rain profiles from the
+Global Precipitation Measurement Microwave Imager. Further applications of the
+method can be found for example in the work by \cite{rydberg_1} or
+\cite{evans_2}.
 
 The optimal estimation method \citep{rodgers}, in short OEM (also MAP, 1DVAR),
 simplifies the Bayesian retrieval problem assuming that a priori knowledge and
-measurement uncertainty can be described by Gaussian distributions and that the
-forward model is only moderately non-linear. Under these assumptions, the a
-posteriori distribution is approximately Gaussian and can be represented by its
+measurement uncertainty both follow Gaussian distributions and that the forward
+model is only moderately non-linear. Under these assumptions, the a posteriori
+distribution is approximately Gaussian and can be fully represented using the
 mean value and covariance matrix. The retrieved values in this case are the mean
 and maximum of the a posteriori distribution, which coincide for a Gaussian
 distribution, as well as the covariance matrix describing the uncertainties in
@@ -194,9 +193,10 @@ the retrieval. In cases where an efficient forward model for the computation of
 simulated measurements and corresponding Jacobians is available, the OEM has
 become the quasi standard method for Bayesian retrievals. Nonetheless, even
 neglecting the validity of the assumptions of Gaussianity and linearity, the
-method is unsuitable for retrievals that involve complex radiative processes. An
-example of such processes is the scattering of mircowave radiation by ice
-clouds, which is generally too expensive to model online during the retrieval.
+method is unsuitable for retrievals that involve complex radiative processes.
+In particular since the OEM requires the computation of the Jacobian of the
+forward model, complex processes such as the scattering of mircowave radiation
+by ice particles become too expensive to model online during the retrieval.
 
 In contrast to the Bayesian retrieval methods discussed above, machine learning
 provides a highly flexible approach to learn computationally efficient retrieval
@@ -206,89 +206,89 @@ low-level data \citep{lecun}. Large amounts of training data from simulations,
 collocated observations or in situ measurement as well as increasing amounts of
 computational power available for training have made machine learning techniques
 an interesting alternative to approaches based on (Bayesian) inverse modeling.
-Numerous applications of deep learning regression methods to retrieval problems
-can be found in recent literature \citep{holl, strandgren, hakansson}. All of
-these examples, however, neglect the probabilistic character of the inverse
-problem and provide only a scalar estimate of the retrieval. Uncertainty
-estimates in these retrievals are provided in the form of expected errors
+Numerous applications of machine learning regression methods to retrieval
+problems can be found in recent literature \citep{holl, strandgren, hakansson}.
+All of these examples, however, neglect the probabilistic character of the
+inverse problem and provide only a scalar estimate of the retrieval. Uncertainty
+estimates in these retrievals are provided in the form of mean errors
 computed on independent test data, which is a clear drawback compared to
 Bayesian methods.
 
 In this article, quantile regression neural networks (QRNNs) are proposed as a
-method to use deep neural networks to estimate the posterior distribution of
+method to use neural networks to estimate the posterior distribution of
 remote sensing retrievals. The aim of this approach is to combine the
 flexibility and computational efficiency of machine learning methods with the
 theoretrically sound handling of uncertainties in the Bayesian framework. 
 
 After a formal description of QRNNs and the retrieval methods used to validate
-the proposed approach in Section~\ref{sec:methods}, the implementation of the
-methods in software is described in Section~\ref{sec:implementation}. In
-Section~\ref{sec:synthetic}, a synthetic retrieval case is used to validate the
-estimates of the posterior distribution against MCMC simulations and the BMCI
-method. Finally, QRNNs are applied to a real world retrieval of cloud pressure
-from MODIS observations in Section~\ref{sec:ctp}.
+the proposed approach in Section~\ref{sec:methods}, their implementation is
+described in Section~\ref{sec:implementation}. In Section~\ref{sec:synthetic}, a
+synthetic retrieval case is used to validate the estimates of the posterior
+distribution against MCMC and BMCI. Section~\ref{sec:ctp} presents the
+application of QRNNs to the retrieval of cloud top pressure and associated
+uncertainties from MODIS observations. Finally, the conclusions from this
+work are presented in Section~\ref{sec:conclusions}.
 
 \section{Methods}
 \label{sec:methods}
 
-This section introduces the Bayesian retrieval formulation and the retrieval methods
-used in the subsequent experiments. Two methods, Markov chain Monte Carlo simulations
-and Baysesian Monte Carlo integration, for the computation of Bayesian a posteriori
-distributions are presented. Furthermore, quantile regression neural networks are
-presented as a machine learning based approach to estimate the a posteriori distribution
-of Bayesian retrieval problems.
+This section introduces the Bayesian retrieval formulation and the retrieval
+methods used in the subsequent experiments. Two Bayesian methods, Markov chain
+Monte Carlo simulation and Baysesian Monte Carlo integration, are presented.
+Quantile regression neural networks are proposed as a machine learning approach
+to estimate the a posteriori distribution of Bayesian retrieval problems. The
+section closes with a discussion of the statistical metrics used to compare the
+different methods.
 
 \subsection{The Retrieval Problem}
 
-The problem under consideration is the retrieval of a scalar, physical quantity
-$x \in \mathrm{R}$ from an indirect measurement given in the form of an observation
-vector $\vec{y} \in \mathrm{R}^m$. In the Bayesian framework, the retrieval problem is
-formulated as finding the posterior distribution $p(x | \vec{y})$ of the
-quantity $x$ given the measurement $\vec{y}$. Formally, this solution can be
+The problem under consideration is the retrieval of a scalar quantity $x \in
+\mathrm{R}$ from an indirect measurement given in the form of an observation
+vector $\vec{y} \in \mathrm{R}^m$. In the Bayesian framework, the retrieval
+problem is formulated as finding the posterior distribution $p(x | \vec{y})$ of
+the quantity $x$ given the measurement $\vec{y}$. Formally, this solution can be
 obatined by application of Bayes theorem:
 \begin{equation}\label{eq:bayes}
   p(x | \vec{y}) = \frac{p(\vec{y} | x)p(x)}{\int p(x', \vec{y}) dx'}
 \end{equation}
-The a priori distribution $p(x)$ represents the knowledge about the quantity $x$ that
-is available prior to the measurement. The a priori knowledge introduced into the
-retrieval formulation acts as a regularizer on the ill-posed inverse problem and
-ensures that the retrieval solution is physically meaningful.
-If the retrieval quantity $x$ is a scalar, a convenient representation of the a
-posteriori distribution is its cumulative distribution function
-(CDF) $F_{x | \vec{y}}(x)$, which is defined as
-\begin{equation*}
-F_{x | \vec{y}}(x) = \int_{-\infty}^{\infty} p(x | \vec{y}) \: dx.
-\end{equation*}
+The a priori distribution $p(x)$ represents the knowledge about the quantity $x$
+that is available prior to the measurement. The a priori knowledge introduced
+into the retrieval formulation regularizes the ill-posed inverse problem and
+ensures that the retrieval solution is physically meaningful. The a posteriori
+distribution of a scalar retrieval quantity $x$ can be represented by the
+corresonding cumulative distribution function (CDF) $F_{x | \vec{y}}(x)$,
+which is defined as 
+\begin{equation}\label{eq:cdf}
+F_{x | \vec{y}}(x) = \int_{-\infty}^{x} p(x' | \vec{y}) \: dx'.
+\end{equation}
 
 \subsection{Bayesian Retrieval Methods}
 
-The a posteriori distribution in Equation (\ref{eq:bayes}) can generally not
-be computed or sampled from directly. In the following two methods are presented
-that are commonly used to compute the a posteriori distribution of Bayesian remote
-sensing retrievals.
+Eventhough the a posteriori distribution in Equation (\ref{eq:bayes}) can generally not
+be computed or sampled from directly, numerous methods exist to approximate the a posteriori
+distribution to varying degreees of accuracy. 
 
 \subsubsection{Markov Chain Monte Carlo}
 
-    Markov Chain Monte Carlo (MCMC) or Markov Chain simulation is a method
-    to generate samples from arbitrary posterior distributions $p(x | \vec{y})$.
-    It is based on drawing samples from an approximate distribution and
-    refining these in a way such that the resulting sample distribution
-    converges to the true distribution \citep{bda}.
+Markov Chain Monte Carlo (MCMC) simulation denote a set of methods for the
+generation of samples from arbitrary posterior distributions $p(x | \vec{y})$.
+The general principle is to compute samples from an approximate distribution and
+refine them in a way such that the resulting sample distribution converges to
+the true a posteriori distribution \citep{bda}. In this study, the Metropolis
+algorithm is used to implement MCMC. The Metropolis algorithm iteratively
+generates a sequence of states $\vec{x}_0, \vec{x}_1, \ldots$ using a symmetric
+proposal distribution $J_t(\vec{x}^* | \vec{x}_{t-1})$. In each step of the
+algorithm, a proposal $\vec{x}^*$ for the next step is generated by sampling
+from the proposal distribution $J_t(\vec{x}^* | \vec{x}_{t-1})$. The proposed
+state $\vec{x}^*$ is accepted as the next simulation step $\vec{x}_t$ with probability
+$\text{min} \left \{1, \frac{p(\vec{x}^x | \vec{y})}{p(\vec{x}_{t-1} | \vec{y})}
+\right \}$. Otherwise $\vec{x}^*$ is rejected and the current simulation step $\vec{x}_{t-1}$
+is kept for $\vec{x}_t$.
 
-    In this study, the Metropolis algorithm is used to implement MCMC. The
-    Metropolis algorithm iteratively generates a sequence of states $\vec{x}_0,
-    \vec{x}_1, \ldots$ based on a symmetric proposal distribution
-    $J_t(\vec{x}^* | \vec{x}_{t-1})$. In each step of the algorithm, the
-    distribution $J_t(\vec{x}^* | \vec{x}_{t-1})$ is used to generate a new
-    proposal state $\vec{x}^*$ given the current state $\vec{x}_{t-1}$ of the simulation.
-    The proposed state $\vec{x}^*$ is accepted ($\vec{x}_t = \vec{x}^*$) with
-    probability $\text{min} \left \{1, \frac{p(\vec{x}^x |
-      \vec{y})}{p(\vec{x}_{t-1} | \vec{y})} \right \}$. Otherwise it is rejected
-    ($\vec{x}_t = \vec{x}_{t-1}$).
-
-    If the proposal distribution is symmetric and satisfies the Markov chain property, the
-    samples generated using the Metropolis algorithm are guaranteed to converge to the
-    true a posteriori distribution. 
+    If the proposal distribution $J(\vec{x}^*, \vec{x}_{t-1})$ is symmetric and
+    samples generated from it satisfy the Markov chain property, the samples
+    generated using the Metropolis algorithm are guaranteed to converge to the
+    true a posteriori distribution.
 
 \subsubsection{Bayesian Monte Carlo Integration}
 
@@ -316,67 +316,66 @@ sensing retrievals.
     measurement $\vec{y_i}$, which is usually assumed to be multivariate
     Gaussian with covariance matrix $\vec{S}_o$:
     \begin{equation*}
-    w_i(\vec{y}) = \frac{1}{C} \exp \left \{- \frac{(\vec{y} - \vec{y}_i)^T \vec{S}_o^{-1}
+    w_i(\vec{y}) =  \exp \left \{- \frac{(\vec{y} - \vec{y}_i)^T \vec{S}_o^{-1}
                                        (\vec{y} - \vec{y}_i)}{2} \right \}
     \end{equation*}
     The normalization factor $C$ is given by $C = \sum_{i = 1}^n w_i(\vec{y}).$ By
     approximating integrals of the form (\ref{eq:bmci_int}), it is possible to
-    estimate expectation value and variance of the posterior distribution by choosing $f(x) =
+    estimate the expectation value and variance of the posterior distribution by choosing $f(x) =
     x$ and $f(x) = (x - \mathcal{E}(x | \vec{y}))^2$, respectively. Likewise it
-    is possible to approximate the cumulative density function of the posterior
-    using
+    is possible to approximate the cumulative distribution function (\ref{eq:cdf}) of
+    the posterior using
     \begin{equation}
     \label{eq:cdf}
-    F_{x | \vec{y}}(x) &= \int_{-\infty}^x  p(x') \: dx'\approx \sum_{x_i < x}^n w_i(\mathbf{y}).
+    F_{x | \vec{y}}(x) &\approx \sum_{x_i < x} w_i(\mathbf{y}).
     \end{equation}
 
 \subsection{Machine Learning}
 
-In the field of machine learning, regression problems are typically approached
-by training a parametrized model $f: \vec{x} \mapsto \vec{y}$ to predict a
-desired output $\vec{y}$ from given input $\vec{x}$.
-
-Unfortunately, the use of the variables $\vec{x}$ and $\vec{y}$ in
-machine learning is directly opposite to their use in inverse theory. However,
-for the remainder of this section the variables $\vec{x}$ and $\vec{y}$ will be
-used to denote, respectively, the input and output to the machine learning model
-in order to be consistent with the common notation in the field of machine
-learning. The reader must just keep in mind that the method is applied in the
-later sections to predict a retrieval quantity $x$ from a measurement $\vec{y}$.
+Neglecting uncertainties, the retrieval of a quantity $x$ from a measurement
+vector $\vec{y}$ may be viewed as a simple multiple regression task. In machine
+learning, regression problems are typically approached by training a
+parametrized model $f: \vec{x} \mapsto \vec{y}$ to predict a desired output
+$\vec{y}$ from given input $\vec{x}$. Unfortunately, the use of the variables
+$\vec{x}$ and $\vec{y}$ in machine learning is directly opposite to their use in
+inverse theory. For the remainder of this section the variables $\vec{x}$ and
+$\vec{y}$ will be used to denote, respectively, the input and output to the
+machine learning model to ensure consistency with the common notation in the
+field of machine learning. The reader must keep in mind that the method is
+applied in the later sections to predict a retrieval quantity $x$ from a
+measurement $\vec{y}$.
 
 \subsubsection{Supervised Learning and Loss Functions}
 
-A common way of training machine learning methods is supervised training, in which
-the machine learning model $f$ is trained on a training set
-$\{\vec{x}_i, \vec{y}_i\}_{i = 1}^n$ consisting of input values $\vec{x}_i$ and
-corresponding expected output values $\vec{y}_i$. The training is performed by
-finding model parameters that minimize the mean of a given loss function
-$\mathcal{L}(f(\vec{x}), \vec{y})$ on the training set.
-
-The arguably most common loss function for regression tasks is the
-squared error loss 
+Machine learning regression models are trained using supervised training, in
+which the model $f$ learns the regression mapping from a a training set
+$\{\vec{x}_i, \vec{y}_i\}_{i = 1}^n$ with input values $\vec{x}_i$ and expected
+output values $\vec{y}_i$. The training is performed by finding model parameters
+that minimize the mean of a given loss function $\mathcal{L}(f(\vec{x}),
+\vec{y})$ on the training set. The most common loss function for regression
+tasks is the squared error loss
 \begin{equation}
   \mathcal{L}_{se}(f(\vec{x}), \vec{y}) &= (f(\vec{x}) - \vec{y})^T (f(\vec{x}) - \vec{y}),
 \end{equation}
 which trains the model $f$ to minimize the mean squared distance
 of the neural network prediction $f(\vec{x})$ from the expected output
-$\vec{y}$.
+$\vec{y}$ on the training set.
 If the estimand $\vec{y}$ is a random vector drawn from a conditional
 probability distribution $p(\vec{y} | \vec{x})$, a regressor trained using a
 sqared error loss function learns to predict the conditional expectation value of
 the distribution $p(\vec{y} | \vec{x})$ \citep{bishop_mdn}. Depending on the
-choice of the loss function, it is also possible to learn other statistics of
+choice of the loss function, it is even possible to learn to predict other statistics of
 the distribution $p(\vec{y} | \vec{x})$ from the training data.
 
 \subsubsection{Quantile Regression}
 
-    Given the cumulative density function $F(x)$ of a probability distribution
+    Given the cumulative distribution function $F(x)$ of a probability distribution
     $p$, its $\tau\text{th}$ quantile $x_\tau$ is defined as
     \begin{align}
     x_\tau &= \inf \{x \: : \: F(x) \geq \tau \},
     \end{align}
     i.e. the greatest lower bound of all values of $x$ for which $F(x) \geq \tau$.
-    As it has been shown by \citet{koenker}, the $\tau\text{th}$ quantile $x_\tau$ of $F$
+    As shown by \citet{koenker}, the $\tau\text{th}$ quantile $x_\tau$ of $F$
     minimizes the expectation value $\mathcal{E}_x\left ( \mathcal{L}_\tau(x_\tau, x) \right) = \int_{-\infty}^\infty \mathcal{L}_\tau(x_\tau, x') p(x') \: dx'$
     of the function
     \begin{align}\label{eq:quantile_loss}
@@ -396,204 +395,213 @@ the distribution $p(\vec{y} | \vec{x})$ from the training data.
 
 \subsubsection{Neural Networks}
 
-A neural networks is a computing model that computes a vector of output
-activations $\vec{y}$ from a vector of input activations $\vec{x}$. Feed-forward
-artificial neural networks (ANNs) compute the
-vector $\vec{y}$ by application of a given number of subsequent, learnable
-transformations to the input activations $\vec{x}$:
+A neural network computes a vector of output activations $\vec{y}$ from a vector
+of input activations $\vec{x}$. Feed-forward artificial neural networks (ANNs)
+compute the vector $\vec{y}$ by application of a given number of subsequent,
+learnable transformations to the input activations $\vec{x}$:
 \begin{align*}
     \vec{x}_0 &= \vec{x}\\
     \vec{x}_i &= f_{i}
     \left ( \vec{W}_{i} \vec{x}_{i - 1}+ \vec{\theta}_i \right ) \\
     \hat{\vec{y}} &= \vec{x}_{n}
 \end{align*}
-The activation functions $f_i$ as well as the number and sizes of the
-hidden layers $\vec{x}_1, \ldots, \vec{x}_{n-1}$ are fixed, structural parameters of a neural
-network model. The learnable parameters of the model are the weight
-matrices $\vec{W}_i$ and bias vectors $\vec{\theta}_i$ of each layer.
+The activation functions $f_i$ as well as the number and sizes of the hidden
+layers $\vec{x}_1, \ldots, \vec{x}_{n-1}$ are fixed, structural parameters of a
+neural network model, generally referred to as hyper or meta parameters. The learnable
+parameters of the model are the weight matrices $\vec{W}_i$ and bias vectors
+$\vec{\theta}_i$ of each layer. Neural networks can be efficiently trained in
+a supervised manner by using gradient based minimization methods to find
+suitable weights $\vec{W}_i$ and bias vectors $\vec{\theta}_i$. By using the
+mean of the quantile loss function $\mathcal{L}_\tau$ as the training criterion,
+a neural network can be trained to predict the quantiles of the distribution
+$p(\vec{y} | \vec{x})$, thus turning the network into a quantile regression
+neural network.
 
-Neural networks can be efficiently trained in a supervised manner by using
-gradient based minimization methods to find suitable weights $\vec{W}_i$ and
-bias vectors $\vec{\theta}_i$. Hence, all that is required to use a neural networks
-for quantile regression is the use of the mean quantile loss function
-$\mathcal{L}_\tau$ as minimzation criterion during the training of network.
-    
+\subsubsection{Adversarial Training}
+
+  Adversarial training is a data augmentation technique that has been proposed
+  to increase the robustness of neural networks to perturbations in the input
+  data \citep{goodfellow_2}. It has been shown to be effective also as a method
+  to improve the calibration of probabilistic predictions from neural networks
+  \citep{lakshminarayanan}. The basic principle of adversarial training is to
+  augment the training data with perturbed samples that are likely to
+  yield a large change in the network prediction. The method used here to
+  implement adversarial training  is the fast gradient sign method
+  proposed by \citet{goodfellow_2}. For a training sample $(\vec{x}_i, \vec{y}_i)$
+  consisting of input $\vec{x}_i \in \mathrm{R}^{n}$ and expected output
+  $\vec{y}_i \in \mathrm{R}^m$ the corresponding adversarial sample
+  $(\vec{\tilde{x}}_i, \vec{y}_i)$ is chosen to be
+    \begin{align}
+      \vec{\tilde{x}}_i = \vec{x}_i + \delta_\text{adv} \text{sign} \left (
+     \frac{d \mathcal{L}(\hat{\vec{x}}(\vec{x}_i), x)}{d\vec{x}_i}
+      \right ),
+    \end{align}
+    i.e., the direction of the perturbation is chosen in such a way that
+    it maximizes the absolute change in the loss function $\mathcal{L}$ due
+    to an infinitesimal change in the input parameters. The adversairal
+    perturbation factor $\delta_{adv}$ determines the strength of the perturbation
+    and becomes an additional hyperparameter of the neural network model.
+
 \subsection{Evaluating Probabilistic Predictions}
 
-  A problem that remains is how to compare two estimated posterior distributions
-  $p'(x | \vec{y}), p''(x | \vec{y})$ against a single sample $x$ from the true
-  a posteriori distribution $p(x | \vec{y})$. A probabilistic prediction of an
-  observed value $x$ should be sharp, i.e. concentrated in the vicinity of
-  $x$, but at the same time well calibrated, i.e. predicting probabilities
-  that truthfully reflect observed frequencies \citep{gneiting_2}. Such summary
-  measures for the evaluation of predicted conditional distributions are called
-  scoring rules \citep{gneiting}. An important property of scoring rules
+  A problem that remains is how to compare two estimates $p'(x | \vec{y}), p''(x
+  | \vec{y})$ of a given a posteriori distribution against a single observed sample
+  $x$ from the true distribution $p(x | \vec{y})$. A good
+  probabilistic prediction for the value $x$ should be sharp, i.e. concentrated in
+  the vicinity of $x$, but at the same time well calibrated, i.e. predicting
+  probabilities that truthfully reflect observed frequencies \citep{gneiting_2}.
+  Summary measures for the evaluation of predicted conditional distributions are
+  called scoring rules \citep{gneiting}. An important property of scoring rules
   is propriety, which formalizes the concept of the scoring rule rewarding both
   sharpness and calibration of the prediction. Besides providing reliable
   measures for the comparison of probabilistic predictions, proper scoring rules
-  can also be used as loss function in supervised learning to incentivize
+  can also be used as loss functions in supervised learning to incentivize
   statistically consistent predictions.
 
-  As noted by \cite{gneiting}, the quantile loss function given in equation
-  (\ref{eq:quantile_loss}) is a proper scoring rule for quantile estimation
-  and can thus  be used to compare the skill of different methods for
-  quantile estimation.
-
-  Another proper scoring rule for the evaluation of estimations of a
-  cumulative distribution function $F$ is the continuous ranked probability
-  score (CRPS):
+  The quantile loss function given in equation (\ref{eq:quantile_loss}) is a
+  proper scoring rule for quantile estimation and can thus be used to compare
+  the skill of different methods for quantile estimation \citep{gneiting}.
+  Another proper scoring rule for the evaluation of estimations of a cumulative
+  distribution function $F$ is the continuous ranked probability score (CRPS):
   \begin{align}\label{eq:crps}
-    \text{CRPS}(F, x) &= \int_{-\infty}^{\infty} 
-    \left ( F(y) - I_{x \geq y} \right )^2 \: dy
+    \text{CRPS}(F, x) &= \int_{-\infty}^{\infty} \left ( F(x') - I_{x \leq x'}
+    \right )^2 \: dx'
   \end{align}
-  For the methods used in this article the integral  can only
-  be evaluated approximately. The exact way in which this is done for each
-  method is described in detail in Section \ref{sec:implementation}.
+  Here, $I_{x \leq x'}$ is the indicator function that is equal to 1 when
+  the condition $x \leq x'$ is true and $0$ otherwise.
+  For the methods used in this article the integral can only be evaluated
+  approximately. The exact way in which this is done for each method is
+  described in detail in Section \ref{sec:implementation}.
 
   The scoring rules presented above evaluate probabilistic predictions against a
-  single observed value. However, since MCMC simulations can be used to generate
-  samples from the true a posteriori distribution, the probabilistic predictions
-  obtained from BMCI and QRNN can also be compared directly to the a posteriori
-  distributions obtained using MCMC. In the idealized case of the modeling
-  assumptions underlying the MCMC simulations being true, the sampling
-  distribution obtained from MCMC will converge to the true posterior and can
-  therefore be used as a ground truth to assess the predictions obtained using
-  the QRNN and BMCI methods.
+  single observed value. However, since MCMC simulations can be used to
+  approximate the true a posteriori distribution to an arbitrary degree of
+  accuracy, the probabilistic predictions obtained from BMCI and QRNN can be
+  compared directly to the a posteriori distributions obtained using MCMC. In
+  the idealized case where the modeling assumptions underlying the MCMC
+  simulations are true, the sampling distribution obtained from MCMC will
+  converge to the true posterior and can be used as a ground truth to assess the
+  predictions obtained using QRNNs and BMCI.
 
-\section{Implementation}
-\label{sec:implementation}
-
-  In this section the implementation of the retrieval methods used in the
-  subsequent experiments is described. All three methods (MCMC, BCMI, QRNN) have
-  been implemented in Python \citep{python} and released as parts of the typhon
-  \citep{typhon} software package. The code for all calculations presented in
-  this paper is made available in the form of jupyter notebooks through public
-  repositories \citep{predictive_uncertainty, smhi}.
-
-\subsection{Markov Chain Monte Carlo}
-
-   The MCMC retrieval presented in Section~\ref{sec:synthetic} are based on
-   a Python implementation of the Metropolis algorithm \citep[Ch. 12]{bda}.
-   The implementation is designed to use the ARTS amtospheric radiative
-   transfer simulator \citep{arts_1, arts_2} as forwad model and has been
-   integrated into the typhon package.
-
-   The MCMC retrieval computes the a posteriori distribution of the integrated
-   column water vapor from passive microwave observations. The state space in
-   which the retrieval is performed is given by the temperature and water vapor
-   profiles of a plane parallel atmsophere. Proposal states are generated from a
-   random walk using the a priori covariance matrix scaled by an adaptive factor
-   that aims to keep the acceptance rate close to the optimal $21\%$
-   \citep{bda}.
-
-   A single MCMC retrieval consists of 8 independent runs, that are started with
-   different random states sampled from the a priori distribution. Each run
-   starts with a warm-up phase followed by an adaptive phase during which the
-   scaling of the covariance matrix of the proposal distribution is adapted. This is
-   followed by a production phase during which 5000 samples of the a posteriori
-   distribution are generated. Of these 5000 only 250 are kept in order to decrease
-   the correlation between the samples. To ensure sufficient convergence of the
-   simulations, the scale reduction factor $\hat{R}$ and the effective number of
-   independent samples \citep[eqs. (11.12), (11.13)]{bda} are computed. The
-   retrieval is discarded if the values are not smaller than 1.1 and larger than
-   100, respectively.
-   
-\subsection{Bayesian Monte Carlo Integration}
-
-  Also the BMCI method has been implemented in python and integrated into the
-  typhon package. The implementation provides functionality to speed up
-  calculations by excluding entries that are guaranteed to have a smaller weight
-  than a given limit. For the experiments presented below this was not used
-  since computational performance was not considered critical. In addition to
-  retrieving the first two moments of the posterior distribution, the
-  implementation also provides functionality to retrieve the posterior CDF using
-  Equation (\ref{eq:cdf}). Approximate posterior quantiles are computed by
-  interpolating the inverse CDF at the desired quantile values. To compute the
-  CRPS score for a given retrieval, the trapezoidal rule is used to perform the
-  integral over the values $x_i$ in the retrieval database $\{\vec{y}_i,
-  x_i\}_{i = 1}^n$.
-
-\subsection{Quantile Regression Neural Networks}
-
-    The implementation of quantile regression neural networks that has been
-    developed is based on the Keras Python package for deep learning
-    \citep{keras}. In order to enable the training of neural networks to predict
-    quantiles, the quantile loss function $\mathcal{L}_\tau(x_\tau, x)$ has been
-    implemented as a Keras-compatible loss function. The function can be
-    initiated with a sequence of quantile fratctions $\tau_1, \ldots, \tau_k$
-    allowing the neural network to learn to predict the corresponding quantiles
-    $x_{\tau_1}, \ldots, x_{\tau_k}$.
-
-    In addition to that, customized data generators have been added to the
-    implementation in order to allow the incorporation of information on
-    measurement uncertainty into the training process. If the training data is
-    noise free, the data generator can be used to add Gaussian noise to each
-    training batch according to the assumptions on measurement uncertainty. The
-    noise is added only directly before the data is passed to the neural network
-    keeping the original training data noise free. This ensures that the network
-    does not see the same, noisy training sample twice during training.
-
-    The QRNN implementation also provides support for adversarial training.
-    While the general motivation for adversarial training is making neural
-    network predictions more robust \citep{goodfellow_2}, its effect is similar
-    to the augmentation of training data through the addition of noise to the
-    input data. It has been proposed as a method to improve the calibration of
-    probabilistic predictions from neural networks by \cite{lakshminarayanan}.
-
-    The fast gradient sign method proposed by \citet{goodfellow_2} is used
-    to implement adversarial training. Each training batch $(\vec{y}_i, \vec{x}_i)$
-    consisting of $m$ input samples $\vec{y}_i \in \mathrm{R}^{m \times n}$ and
-    expected outcomes $\vec{x}_i \in \mathrm{R}^m$ is augmented with a perturbed
-    batch $(\vec{\tilde{y}}_i, \vec{x}_i)$ where $\vec{\tilde{y}}_i \in
-    \mathrm{R}^{m \times n}$ is such that
-    \begin{align}
-      \vec{\tilde{y}}_i = \vec{y}_i + \delta_\text{adv} \text{sign} \left (
-      \frac{d \mathcal{L}_\tau(\hat{\vec{x}}_\tau(\vec{y}_i), x)}{d\vec{y}_i} \right
-      )
-    \end{align}
-
-    Here $\hat{\vec{x}}_\tau(\vec{y}_i)$ is the output predicted by the neural
-    network for the input $\vec{x}_i$. The batch presented to the network is
-    then simply given by the concatenation of the two batches.
-
-   For the training of the neural network an adaptive form of stochastic batch
-   gradient descent is used. During training, loss is monitored on a validation
-   set. When the loss on the validation set hasn't decreased for a certain number
-   of epochs, the training rate is reduced by a given reduction factor. The
-   training is stopped when a predefined minimum learning rate is reached.
-
-   The reconstruction of the CDF from the estimated quantiles is obtained
-   by using the quantiles as nodes of a piece-wise linear approximation and
-   extending the first and last segements out to 0 and 1, respectively.
-   This approximation is also used to compute the CRPS score on the test
-   data.
+%\section{Implementation}
+%\label{sec:implementation}
+%
+%  In this section the implementation of the retrieval methods used in the
+%  subsequent experiments is described. All three methods (MCMC, BCMI, QRNN) have
+%  been implemented in Python \citep{python} and released as parts of the typhon
+%  \citep{typhon} software package. The code for all calculations presented in
+%  this paper is made available in the form of jupyter notebooks through public
+%  repositories \citep{predictive_uncertainty, smhi}.
+%
+%\subsection{Markov Chain Monte Carlo}
+%
+%   The MCMC retrieval presented in Section~\ref{sec:synthetic} are based on
+%   a Python implementation of the Metropolis algorithm \citep[Ch. 12]{bda}.
+%   The implementation is designed to use the ARTS amtospheric radiative
+%   transfer simulator \citep{arts_1, arts_2} as forwad model and has been
+%   integrated into the typhon package.
+%
+%   The MCMC retrieval computes the a posteriori distribution of the integrated
+%   column water vapor from passive microwave observations. The state space in
+%   which the retrieval is performed is given by the temperature and water vapor
+%   profiles of a plane parallel atmsophere. Proposal states are generated from a
+%   random walk using the a priori covariance matrix scaled by an adaptive factor
+%   that aims to keep the acceptance rate close to the optimal $21\%$
+%   \citep{bda}.
+%
+%   A single MCMC retrieval consists of 8 independent runs, that are started with
+%   different random states sampled from the a priori distribution. Each run
+%   starts with a warm-up phase followed by an adaptive phase during which the
+%   scaling of the covariance matrix of the proposal distribution is adapted. This is
+%   followed by a production phase during which 5000 samples of the a posteriori
+%   distribution are generated. Of these 5000 only 250 are kept in order to decrease
+%   the correlation between the samples. To ensure sufficient convergence of the
+%   simulations, the scale reduction factor $\hat{R}$ and the effective number of
+%   independent samples \citep[eqs. (11.12), (11.13)]{bda} are computed. The
+%   retrieval is discarded if the values are not smaller than 1.1 and larger than
+%   100, respectively.
+%   
+%\subsection{Bayesian Monte Carlo Integration}
+%
+%  Also the BMCI method has been implemented in python and integrated into the
+%  typhon package. The implementation provides functionality to speed up
+%  calculations by excluding entries that are guaranteed to have a smaller weight
+%  than a given limit. For the experiments presented below this was not used
+%  since computational performance was not considered critical. In addition to
+%  retrieving the first two moments of the posterior distribution, the
+%  implementation also provides functionality to retrieve the posterior CDF using
+%  Equation (\ref{eq:cdf}). Approximate posterior quantiles are computed by
+%  interpolating the inverse CDF at the desired quantile values. To compute the
+%  CRPS score for a given retrieval, the trapezoidal rule is used to perform the
+%  integral over the values $x_i$ in the retrieval database $\{\vec{y}_i,
+%  x_i\}_{i = 1}^n$.
+%
+%\subsection{Quantile Regression Neural Networks}
+%
+%    The implementation of quantile regression neural networks that has been
+%    developed is based on the Keras Python package for deep learning
+%    \citep{keras}. In order to enable the training of neural networks to predict
+%    quantiles, the quantile loss function $\mathcal{L}_\tau(x_\tau, x)$ has been
+%    implemented as a Keras-compatible loss function. The function can be
+%    initiated with a sequence of quantile fratctions $\tau_1, \ldots, \tau_k$
+%    allowing the neural network to learn to predict the corresponding quantiles
+%    $x_{\tau_1}, \ldots, x_{\tau_k}$.
+%
+%    In addition to that, customized data generators have been added to the
+%    implementation in order to allow the incorporation of information on
+%    measurement uncertainty into the training process. If the training data is
+%    noise free, the data generator can be used to add Gaussian noise to each
+%    training batch according to the assumptions on measurement uncertainty. The
+%    noise is added only directly before the data is passed to the neural network
+%    keeping the original training data noise free. This ensures that the network
+%    does not see the same, noisy training sample twice during training.
+%
+%    Here $\hat{\vec{x}}_\tau(\vec{y}_i)$ is the output predicted by the neural
+%    network for the input $\vec{x}_i$. The batch presented to the network is
+%    then simply given by the concatenation of the two batches.
+%
+%   For the training of the neural network an adaptive form of stochastic batch
+%   gradient descent is used. During training, loss is monitored on a validation
+%   set. When the loss on the validation set hasn't decreased for a certain number
+%   of epochs, the training rate is reduced by a given reduction factor. The
+%   training is stopped when a predefined minimum learning rate is reached.
+%
+%   The reconstruction of the CDF from the estimated quantiles is obtained
+%   by using the quantiles as nodes of a piece-wise linear approximation and
+%   extending the first and last segements out to 0 and 1, respectively.
+%   This approximation is also used to compute the CRPS score on the test
+%   data.
 
 
 
 \section{Application to a Synthetic Retrieval Case}
 \label{sec:synthetic}
 
-  In this section the synthetic retrieval that is used to evaluate the
-  performance of the BMCI and QRNN methods against MCMC is presented. The
-  influence of different hyperparameters on the performance of the QRNN is
-  investigated and finally the performance of the two methods is compared with
-  respect to the size of the training database.
+In this section, a simulated retrieval of column water vapor from passive
+microwave observations is used to benchmark the performance of BMCI and QRNN
+against MCMC simulation. The retrieval case has been set up to provide an
+idealized but realistic scenario in which the true a posteriori distribution can
+be approximated using MCMC simulation. The MCMC results can therefore be used as
+baseline to investigate the retrieval performance of QRNNs and BMCI. Furhermore
+it is investigated how different hyper parameters influence the performance of
+the QRNN as well as the how the size of the training set and retrieval database
+impact the performance of QRNNs and BMCI.
 
-\subsection{Retrieval Setup}
+\subsection{The Retrieval}
 
    For this experiment, the retrieval of column water vapor (CWV) from passive
    microwave observations over the ocean is considered. The state of the
    atmosphere is represented by profiles of temperature and water vapor
-   concentrations on 15 pressure levels between $10^3$ and $10^1\unit{hPa}$. The
+   concentrations on 15 pressure levels between $10^3$ and $10\:\unit{hPa}$. The
    variablility of these quantities has been estimated based on ECMWF ERA
-   Interim data \citep{era_interim} from the year 2016 restricted to latitudes
+   Interim data \citep{era_interim} from the year 2016, restricted to latitudes
    between $23^\circ$ and $66^\circ$ North. Parametrizations of the multivariate
    distributions of temperature and water vapor were obtained by fitting a joint
    multivariate normal distribution to the temperature and the logarithm of
    water vapor concentrations. The fitted distribution represents the a priori
    knowledge on which the simulations are based.
 
-\subsection{Radiative Transfer Simulations}
+\subsubsection{Forward Model Simulations}
 
    The Atmospheric Radiative Transfer Simulator (ARTS) \citep{arts} is used to
    simulate satellite observations of the atmsopheric states sampled from the a
@@ -607,11 +615,11 @@ $\mathcal{L}_\tau$ as minimzation criterion during the training of network.
     \hline
     Channel & Center Frequency           & Bandwidth                \\ 
     \hline
-                  1 & $23.8 \unit{GHz}$ & $270 \unit{GHz}$ \\
-                  2 & $88.2 \unit{GHz}$ & $500 \unit{GHz}$ \\
-                  3 & $165.5\unit{GHz}$ & $300 \unit{GHz}$ \\
-                  4 & $183.3\unit{GHz}$ & $3000\unit{GHz}$ \\
-                  5 & $183.3\unit{GHz}$ & $1000\unit{GHz}$ \\
+                  1 & $23.8 \unit{GHz}$ & $270 \unit{MHz}$ \\
+                  2 & $88.2 \unit{GHz}$ & $500 \unit{MHz}$ \\
+                  3 & $165.5\unit{GHz}$ & $300 \unit{MHz}$ \\
+                  4 & $183.3 \pm 7 \unit{GHz}$ & $2000\unit{MHz}$ \\
+                  5 & $183.3 \pm 3 \unit{GHz}$ & $1000\unit{MHz}$ \\
     \hline
 \end{tabular}
 \caption{Observation channels used for the synthetic retrieval of column water vapor}
@@ -620,32 +628,134 @@ $\mathcal{L}_\tau$ as minimzation criterion during the training of network.
 
    The simulations take into acount only absorption and emission from water
    vapor. Ocean surface emissivities are computed using the FASTEM \cite{fastem}
-   model without taking into account surface winds. The sea surface temperature
+   model with an assumed surface wind speed of zero. The sea surface temperature
    is assumed to be equal to the temeperature at the highest pressure level but
-   no lower than $270\unit{K}$. Sensor characteristics and absorption
-   lines are taken from the ATMS sensor descriptions that are provided within
-   the ARTS XML Data package. Simulations are performed assuming a
-   plane-parallel atmsophere and neglecting polarization.
+   no lower than $270\unit{K}$. Sensor characteristics and absorption lines are
+   taken from the ATMS sensor descriptions that are provided within the ARTS XML
+   Data package. Simulations are performed for a nadir looking sensor and
+   assuming a plane-parallel atmsophere. Polarization is neglected. The
+   observation uncertainty is assumed to be independent Gaussian noise with a
+   standard deviation of $1\:\unit{K}$.
+
+
+\subsubsection{MCMC Implementation}
+
+  The MCMC retrieval is based on a Python implementation of the Metropolis
+  algorithm \citep[Ch. 12]{bda} that has been developed within the context of
+  this study. It is released as part of the \textit{typhon: tools for atmospheric
+  research} software package \citep{typhon}.
+
+  The MCMC retrieval is performed in the space of atmospheric states described
+  by the profiles of temperature and log water vapor concentrations. The
+  multivariate Gaussian distribution that has been obtained by fit to the ERA
+  Interim data is taken as a priori distribution. A random walk is used as
+  proposal distribution with its covariance matrix taken as the a priori
+  covariance matrix. A single MCMC retrieval consists of 8 independent runs,
+  that are started with different random states sampled from the a priori
+  distribution. Each run starts with a warm-up phase followed by an adaptive
+  phase during which the scaling of the covariance matrix of the proposal
+  distribution is scaled adaptively so that the acceptance rate of proposed states is
+  close to the optimal $21\%$ \citep{bda}. This is followed by a production
+  phase during which 5000 samples of the a posteriori distribution are
+  generated. Only 1 out of 20 generated samples is kept in order to decrease the
+  correlation between the resulting states. Convergence of each simulation is
+  checked by computing the scale reduction factor $\hat{R}$ and the effective
+  number of independent samples \citep[eqs. (11.12), (11.13)]{bda}. The
+  retrieval is discarded if the values are not smaller than 1.1 and larger than
+  100, respectively. Each MCMC retrieval generates a sequence of atmospheric
+  states from which the column water vapor is obtained by integration of the
+  water vapor concentration profile. The distribution of observed CWV values
+  is then taken as the retrieved a posteriori distribution.
+
+  
+\subsubsection{QRNN Implementation}
+\label{sec:qrnn_implementation}
+
+  The implementation of quantile regression neural networks is based on the
+  Keras Python package for deep learning \citep{keras}. It is also released
+  part of the typhon package.
+
+  For the training of quantile regression neural networks, the quantile loss
+  function $\mathcal{L}_\tau(x_\tau, x)$ has been implemented so that it can be
+  used as a training loss function within the Keras framework. The function can
+  be instantiated with a sequence of quantile fratctions $\tau_1, \ldots,
+  \tau_k$ allowing the neural network to learn to predict the corresponding
+  quantiles $x_{\tau_1}, \ldots, x_{\tau_k}$.
+
+  Custom data generators have been added to the implementation in order to allow
+  the incorporation of information on measurement uncertainty into the training
+  process. If the training data is noise free, the data generator can be used to
+  add noise to each training batch according to the assumptions on measurement
+  uncertainty. The noise is added only directly before the data is passed to the
+  neural network keeping the original training data noise free. This ensures
+  that the network does not see the same, noisy training sample twice during
+  training and conteracts overfitting. For the case that no specific assumtpions
+  on measurement uncertainty can be made, also a data generator for adversarial
+  training using the fast gradient sign method has been implemented. In this
+  case the perturbation factor $\delta_{\text{adv}}$ becomes an additional
+  hyperparameter of the network and needs to be tuned using idependent
+  validation data.
+
+  For the training of the neural network an adaptive form of stochastic batch
+  gradient descent is used. During training, loss is monitored on a validation
+  set. When the loss on the validation set hasn't decreased for a certain number
+  of epochs, the training rate is reduced by a given reduction factor. The
+  training is stopped when a predefined minimum learning rate is reached.
+
+  The reconstruction of the CDF from the estimated quantiles is obtained
+  by using the quantiles as nodes of a piece-wise linear approximation and
+  extending the first and last segements out to 0 and 1, respectively.
+  This approximation is also used to compute the CRPS score on the test
+  data.
+
+
+\subsubsection{BMCI Implementation}
+
+ Also the BMCI method has been implemented in python and added to the
+ typhon package. In addition to retrieving the first two moments of the
+ posterior distribution, the implementation provides functionality to
+ retrieve the posterior CDF using Equation~(\ref{eq:cdf}). Approximate posterior
+ quantiles are computed by interpolating the inverse CDF at the desired quantile
+ values. To compute the CRPS score for a given retrieval, the trapezoidal rule
+ is used to perform the integral over the values $x_i$ in the retrieval database
+ $\{\vec{y}_i, x_i\}_{i = 1}^n$.
 
 \subsection{QRNN Model Selection}
 
- The structure of a QRNN model that is used for the retrieval is specified by the
- following hyperparamters: (1) the number of hidden layers, (2) the width of
- the hidden layers, (3) the activation functions of each layer. In addition to
- that, the following parameters define the training process: (4) the batch size
- used for stochastic gradient descent, (5) the minimum learning rate at which
- the training is stopped, (6) the learning rate decay factor, and (7) the
- number of epochs without decrease of loss on the validation set before
- the learning rate is reduced.
+Just as common neural networks, QRNNs have several hyperparameters that can not
+be learned directly from the data, but need to be tuned independently. For this
+study the dependence of the QRNN performance on its hyperparamters has been
+investigated. The results are included here as they may be a helpful reference
+for future applications of QRNNs.
 
-  To investigate the influence of these parameters on the performance of the
+For this analysis, hyperparameters describing the structure of the QRNN model
+will be investigated seperately from training parameters. The hyperparameters
+describing the structure of the QRNN are:
+\begin{enumerate}
+  \item the number of hidden layers,
+  \item the number of neurons per layer,
+  \item the type of activation function.
+  \setcounter{enumic}{\value{enumi}}
+\end{enumerate}
+The training method that is used in this study has been described in
+Section~\ref{sec:qrnn_implementation}.  The following parameters define
+the training process:
+\begin{enumerate}
+  \setcounter{enumi}{\value{enumic}}
+  \item the batch size used for stochastic batch gradient descent,
+  \item the minimum learning rate at which the training is stopped,
+  \item the learning rate descay factor,
+  \item the number of training epochs without progress on the validation set
+     before the learning rate is reduced.
+\end{enumerate}
+
+\subsubsection{Structural Parameters}
+
+  To investigate the influence of hyperparameters 1 - 3 on the performance of the
   QRNN, 10-fold cross validation has been used to estimate the performance
-  impact of different hyperparameter configurations. Since the complete
-  hyperparamter space is too large to be explored exhaustively, grid search was
-  performed to find the approximately optimal structural hyperparameters (1),
-  (2), (3). This was followed by a grid search over the training parameters
-  (4), (5), (6) and (7) for the best performing configuration found in the
-  first search.
+  impact of different hyperparameter configurations. A grid search has
+  performed to find  approximately optimal parameters. The results of the
+  analysis are displayed in the graphs in Figure~\ref{fig:hyperparams}.
 
   The full results for the grid search for optimal structural parameters are
   given in Table \ref{tab:model_selection} in the Appendix. The results show a
@@ -659,6 +769,8 @@ $\mathcal{L}_\tau$ as minimzation criterion during the training of network.
   parameters performance saturates if the they are increased further. Based on
   these results, a network with three hidden layers and 128 neurons each has
   been chosen for the comparison against BMCI.
+
+ \subsubsection{Training Parameters}
 
   The optimization of the training parameters showed that best performance is
   obtained for slow training with a small learning rate reduction factor of
@@ -970,6 +1082,7 @@ cloud types.
 
 
 \conclusions  %% \conclusions[modified heading if necessary]
+\label{sec:conclusions}
 
 In this article, quantile regression neural networks have been proposed as a method
 to estimate a posteriori distributions of Bayesian retrieval problems. Moreover,
