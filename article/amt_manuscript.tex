@@ -122,23 +122,20 @@
   of QRNNs over conventional neural network retrievals is that they not only
   learn to predict a single retrieval value but also the associated, case specific
   uncertainties. In this study, the retrieval performance of QRNNs is
-  characterized and compared to that of other state of the art retrieval
+  characterized and compared to that of other state-of-the-art retrieval
   methods.
 
   A synthetic retrieval scenario is presented and used as a validation case for
   the application of QRNNs to Bayesian retrieval problems. The QRNN retrieval
-  performance is evaluated against Markov chain Monte Carlo simulation and
-  another Bayesian method based on Monte Carlo integration over a retrieval
-  database. The scenario is also used to investigate how different
-  hyperparameter configurations and training set sizes affect the retrieval
-  performance.
-
-  In the second part of the study, QRNNs are applied to the retrieval of cloud
-  top pressure from observations by the moderate resolution imaging
-  spectroradiometer (MODIS). It is shown that QRNNs are not only capable of
-  achieving similar accuracy as standard neural network retrievals, but also
-  provide statistically consistent uncertainty estimates for non-Gaussian
-  retrieval errors.
+  performance is evaluated against Markov chain Monte Carlo simulation and another
+  Bayesian method based on Monte Carlo integration over a retrieval database. The
+  scenario is also used to investigate how different hyperparameter configurations
+  and training set sizes affect the retrieval performance. In the second part of
+  the study, QRNNs are applied to the retrieval of cloud top pressure from
+  observations by the moderate resolution imaging spectroradiometer (MODIS). It is
+  shown that QRNNs are not only capable of achieving similar accuracy as standard
+  neural network retrievals, but also provide statistically consistent uncertainty
+  estimates for non-Gaussian retrieval errors.
 
   The results presented in this work show that QRNNs are able to combine the
   flexibility and computational efficiency of the machine learning approach with
@@ -175,8 +172,8 @@ the retrieval quantity $x$ after the measurement, accounting for all considered
 retrieval uncertainties. Bayes' theorem states that the a posteriori
 distribution is proportional to the product $p(\vec{y} | x)p(x)$ of the a priori
 distribution $p(x)$ and the conditional probability of the observed measurement
-$p(\vec{y} | x)$. The a priori distribution $p(x)$ represents knowledge that is
-available about the quantity $x$ before the measurement and can be used to aid
+$p(\vec{y} | x)$. The a priori distribution $p(x)$ represents knowledge about
+the quantity $x$ that is available before the measurement and can be used to aid
 the retrieval with supplementary information.
 
 For a given retrieval, the a posteriori distribution can generally not be
@@ -224,9 +221,8 @@ the OEM has become the quasi-standard method for Bayesian retrievals.
 Nonetheless, even neglecting the validity of the assumptions of Gaussianity and
 linearity, the method is unsuitable for retrievals that involve complex
 radiative processes. In particular, since the OEM requires the computation of the
-Jacobian of the forward model, complex processes such as the scattering of
-microwave radiation by ice particles become too expensive to model online during
-the retrieval.
+Jacobian of the forward model, complex processes such as surface or cloud scattering
+ become too expensive to model online during the retrieval.
 
 Compared to the Bayesian retrieval methods discussed above, machine learning
 provides a more flexible approach to learn computationally efficient retrieval
@@ -240,7 +236,7 @@ All of these examples, however, neglect the probabilistic character of the
 inverse problem and provide only a scalar estimate of the retrieval. Uncertainty
 estimates in these retrievals are provided in the form of mean errors computed
 on independent test data, which is a clear drawback compared to Bayesian
-methods. A notable exception is the work by \citet{aires_1, aires_2, aires_3},
+methods. A notable exception is the work by \citet{aires_2},
 which applies the Bayesian framework to estimate errors in the retrieved
 quantities due to uncertainties on the learned neural network parameters.
 However, the only difference to the approaches listed above is that the
@@ -263,9 +259,8 @@ learning approach with the theoretically sound handling of uncertainties in the
 Bayesian framework.
 
 A formal description of QRNNs and the retrieval methods against which they will
-be evaluated are provided in Sect.~\ref{sec:methods}. In
-Sect.~\ref{sec:synthetic}, a simulated retrieval scenario is used to validate
-the approach against BMCI and MCMC. Section~\ref{sec:ctp} presents the
+be evaluated are provided in Sect.~\ref{sec:methods}. A simulated retrieval scenario is used to validate
+the approach against BMCI and MCMC in Sect.~\ref{sec:synthetic}. Section~\ref{sec:ctp} presents the
 application of QRNNs to the retrieval of cloud top pressure and associated
 uncertainties from satellite observations in the visible and infrared. Finally,
 the conclusions from this work are presented in Sect.~\ref{sec:conclusions}.
@@ -290,7 +285,7 @@ problem is formulated as finding the posterior distribution $p(x | \vec{y})$ of
 the quantity $x$ given the measurement $\vec{y}$. Formally, this solution can be
 obtained by application of Bayes theorem:
 \begin{equation}\label{eq:bayes}
-  p(x | \vec{y}) = \frac{p(\vec{y} | x)p(x)}{\int p(x', \vec{y}) dx'}
+  p(x | \vec{y}) = \frac{p(\vec{y} | x)p(x)}{\int p(x', \vec{y}) dx'}.
 \end{equation}
 The a priori distribution $p(x)$ represents the knowledge about the quantity $x$
 that is available prior to the measurement. The a priori knowledge introduced
@@ -322,12 +317,12 @@ distribution $J_t(\vec{x}^* | \vec{x}_{t-1})$. In each step of the algorithm, a
 proposal $\vec{x}^*$ for the next step is generated by sampling from
 $J_t(\vec{x}^* | \vec{x}_{t-1})$. The proposed state $\vec{x}^*$ is accepted as
 the next simulation step $\vec{x}_t$ with probability $\text{min} \left \{1,
-\frac{p(\vec{x}^x | \vec{y})}{p(\vec{x}_{t-1} | \vec{y})} \right \}$. Otherwise
+\frac{p(\vec{x}^* | \vec{y})}{p(\vec{x}_{t-1} | \vec{y})} \right \}$. Otherwise
 $\vec{x}^*$ is rejected and the current simulation step $\vec{x}_{t-1}$ is kept
 for $\vec{x}_t$. If the proposal distribution $J(\vec{x}^*, \vec{x}_{t-1})$ is
 symmetric and samples generated from it satisfy the Markov chain property with a
 unique stationary distribution, the Metropolis algorithm is guaranteed to
-produce samples the distribution of which converges to the true a posteriori
+produce a distribution of samples which converges to the true a posteriori
 distribution.
 
 \subsubsection{Bayesian Monte Carlo integration}
@@ -356,16 +351,17 @@ distribution.
     measurement $\vec{y_i}$, which is usually assumed to be multivariate
     Gaussian with covariance matrix $\vec{S}_o$:
     \begin{equation*}
-    w_i(\vec{y}) = \exp \left \{- \frac{(\vec{y} - \vec{y}_i)^T \vec{S}_o^{-1}
-                                       (\vec{y} - \vec{y}_i)}{2} \right \}
+    w_i(\vec{y}) \propto \exp \left \{- \frac{(\vec{y} - \vec{y}_i)^T \vec{S}_o^{-1}
+                                       (\vec{y} - \vec{y}_i)}{2} \right \}.
     \end{equation*}
      By approximating integrals of the form (\ref{eq:bmci_int}), it is possible
-    to estimate the expectation value and variance of the posterior distribution by
+    to estimate the expectation value and variance of the a posteriori distribution by
     choosing $f(x) = x$ and $f(x) = (x - \mathcal{E}(x | \vec{y}))^2$, respectively.
-    Likewise, it is possible to approximate the cumulative distribution function
-    (c.f. Eq.~(\ref{eq:cdf})) of the posterior using
+    While this is suitable to represent Gaussian distributions, a more general
+    representation of the a posteriori distribution can be obtained by
+    estimating the corresponding CDF (c.f. Eq.~(\ref{eq:cdf})) using
     \begin{equation}
-    \label{eq:cdf}
+    \label{eq:bmci_cdf}
     F_{x | \vec{y}}(x) \approx \frac{1}{C} \sum_{x_i < x} w_i(\vec{y}).
     \end{equation}
 
@@ -421,7 +417,7 @@ of the function
   \mathcal{L}_{\tau}(x_\tau, x) &=
   \begin{cases}
     \tau |x - x_\tau|, & x_\tau < x \\
-    (1 - \tau)|x - x_\tau|, &\text{otherwise}
+    (1 - \tau)|x - x_\tau|, &\text{otherwise}.
     \end{cases}
 \end{align}
 
@@ -442,7 +438,7 @@ learnable transformations to the input activations $\vec{x}$:
     \vec{x}_0 &= \vec{x}\\
     \vec{x}_i &= f_{i}
     \left ( \vec{W}_{i} \vec{x}_{i - 1}+ \vec{\theta}_i \right ) \\
-    \hat{\vec{y}} &= \vec{x}_{n}
+    \vec{y} &= \vec{x}_{n}.
 \end{align*}
 The activation functions $f_i$ as well as the number and sizes of the hidden
 layers $\vec{x}_1, \ldots, \vec{x}_{n-1}$ are prescribed, structural parameters of a
@@ -476,7 +472,7 @@ neural network.
      \frac{d \mathcal{L}(\hat{\vec{x}}(\vec{x}_i), x)}{d\vec{x}_i}
       \right ),
     \end{align}
-    i.e., the direction of the perturbation is chosen in such a way that
+    i.e. the direction of the perturbation is chosen in such a way that
     it maximizes the absolute change in the loss function $\mathcal{L}$ due
     to an infinitesimal change in the input parameters. The adversarial
     perturbation factor $\delta_{\text{adv}}$ determines the strength of the perturbation
@@ -506,7 +502,7 @@ function $F$ against an observed value $x$ is the continuous ranked probability
 score (CRPS):
   \begin{align}\label{eq:crps}
     \text{CRPS}(F, x) &= \int_{-\infty}^{\infty} \left ( F(x') - I_{x \leq x'}
-    \right )^2 \: dx'
+    \right )^2 \: dx'.
   \end{align}
   Here, $I_{x \leq x'}$ is the indicator function that is equal to 1 when
   the condition $x \leq x'$ is true and $0$ otherwise.
@@ -672,7 +668,7 @@ impact the performance of QRNNs and BMCI.
 
 \subsubsection{Forward model simulations}
 
-   The Atmospheric Radiative Transfer Simulator (ARTS) \citep{arts} is used to
+   The Atmospheric Radiative Transfer Simulator (ARTS, \citet{arts}) is used to
    simulate satellite observations of the atmospheric states sampled from the a
    priori distribution. The observations consist of simulated brightness
    temperatures from five channels around $23, 88, 165, 183 \unit{GHz}$
@@ -696,7 +692,7 @@ impact the performance of QRNNs and BMCI.
 \end{table}
 
 The simulations take into account only absorption and emission from water vapor.
-Ocean surface emissivities are computed using the FASTEM-6 \citep{fastem6} model
+Ocean surface emissivities are computed using the FASTEM-6 model \citep{fastem6}
 with an assumed surface wind speed of zero. The sea surface temperature is
 assumed to be equal to the temperature at the pressure level closest to the
 surface but no lower than $270\unit{K}$. Sensor characteristics and absorption
@@ -786,7 +782,7 @@ independent Gaussian noise with a standard deviation of $1\:\unit{K}$.
  The BMCI method has likewise been implemented in Python and added to the
  typhon package. In addition to retrieving the first two moments of the
  posterior distribution, the implementation provides functionality to
- retrieve the posterior CDF using Eq.~(\ref{eq:cdf}). Approximate posterior
+ retrieve the posterior CDF using Eq.~(\ref{eq:bmci_cdf}). Approximate posterior
  quantiles are computed by interpolating the inverse CDF at the desired quantile
  values. To compute the CRPS score for a given retrieval, the trapezoidal rule
  is used to perform the integral over the values $x_i$ in the retrieval database
@@ -825,24 +821,26 @@ defined by the following training parameters:
   To investigate the influence of hyperparameters 1 - 3 on the performance of
   the QRNN, 10-fold cross validation on the training set consisting of $10^6$
   samples has been used to estimate the performance of different hyperparameter
-  configurations. A grid search over a subspace of the configuration space was
+  configurations. As performance metric the mean quantile loss on the validation
+  set averaged over all predicted quantiles for $\tau = 0.05, 0.1, 0.2, \ldots, 0.9, 0.95$ 
+  is used. A grid search over a subspace of the configuration space was
   performed to find optimal parameters. The results of the analysis are
   displayed in Figure~\ref{fig:hyperparams}. For the configurations considered,
   the layer width has the most significant effect on the performance.
   Nevertheless, only small performance gains are obtained by increasing the
   layer width to values above 64 neurons. Another general observation is that
-  networks with 3 hidden layers generally outperform networks with fewer hidden
+  networks with three hidden layers generally outperform networks with fewer hidden
   layers. Networks using ReLU activation functions not only achieve slightly
   better performance than networks using tanh or sigmoid activation functions,
   but also show significantly lower variability. Based on these results, a
-  neural network with 3 hidden layers, 128 neurons in each layer and ReLU
+  neural network with three hidden layers, 128 neurons in each layer and ReLU
   activation functions has been selected for the comparison to BMCI.
 
 
   \begin{figure}[hbpt!]
     \centering
     \includegraphics[width = 1.0\linewidth]{../plots/fig02}
-    \caption{Average validation set loss (solid lines) and standard deviation (shading)
+    \caption{Mean validation set loss (solid lines) and standard deviation (shading)
              of different hyperparameter configurations with respect to layer width (number of neurons).
              Different lines display the results for different numbers of hidden layers $n_h$.
              The three panels show the results for ReLU, tanh, and sigmoid activation functions.}
@@ -852,7 +850,7 @@ defined by the following training parameters:
  \subsubsection{Training parameters}
  
 For the optimization of the training parameters 4 - 7, a very coarse grid
-search was performed, using only 3 different values for each parameter.
+search was performed, using only three different values for each parameter.
 In general, the training parameters showed only little effect ($< 2\%$ for the
 combinations considered here) on the QRNN performance compared to the structural
 parameters. The best cross-correlation performance was obtained for slow
@@ -877,16 +875,15 @@ size, the best results were obtained for a batch size of 128 samples.
   In this section, the performance of a single QRNN and an ensemble of 10 QRNNs
   are analyzed. The predictions from the ensemble are obtained by averaging the
   predictions from each network in the ensemble. All tests in this subsection are
-  performed for a single QRNN, the ensemble of QRNNs, and BMCI. For this
-  experiment, the retrieval database, which is also used for the training of the
-  QRNNs, contains $10^6$ entries.
+  performed for a single QRNN, the ensemble of QRNNs, and BMCI. The retrieval database used
+  for BMCI and the training of the QRNNs in this expirement consists of $10^6$ entries.
 
-    Figure~\ref{fig:cdfs} displays retrieval results for 8 example cases. The
+    Figure~\ref{fig:cdfs} displays retrieval results for eight example cases. The
 choice of the cases is based on the Kolmogorov-Smirnov (KS) statistic, which
 corresponds to the maximum absolute deviation of the predicted CDF from the
 reference CDF obtained by MCMC simulation. A small KS value indicates a good
 prediction of the true CDF, while a high value is obtained for large deviations
-between predicted and reference CDF. The cases shown correspond to the 1st, 50th,
+between predicted and reference CDF. The cases shown correspond to the 10th, 50th,
  90th and 99th percentile of the distribution of KS values obtained using BMCI
 or a single QRNN. In this way they provide a qualitative overview of the performance
 of the methods.
@@ -951,7 +948,7 @@ of the QRNN (or as retrieval database for BMCI) affects the performance of the
 retrieval method. This has been done by randomly generating training subsets
 from the original training data with sizes logarithmically spaced between $10^3$
 and $10^6$ samples. For each size, five random training subsets have been
-generated and used to retrieve the test data with QRNNs and BMCI. As test data,
+generated and used to retrieve the test data with a single QRNN and BMCI. As test data,
 a separate test set consisting of $10^5$ simulated observations vectors and
 corresponding CWV values is used.
 
@@ -965,11 +962,14 @@ has been used in the simulation. As expected, the performance of both methods
 improves with the size of the training set. With respect to the MAPE, both
 methods perform equally well for a training set size of $10^6$, but the QRNN
 outperforms BMCI for all smaller training set sizes. With respect to CRPS, a
-similar behavior is observed.
+similar behavior is observed. These are reassuring results, as they indicate
+that not only the accuracy of the predictions (measured by the MAPE and CRPS) improves
+as the amount of training data increases, but also their calibration (measured
+ only by the CRPS).
 
   \begin{figure}[hbpt!]
 %    \centering
-    \includegraphics[width = 0.5\linewidth]{../plots/fig05}
+    \includegraphics[width = 0.8\linewidth]{../plots/fig05}
     \caption{MAPE (Panel (a)) and CRPS (Panel (b)) achieved by QRNN (red) and BMCI (blue)
       on the test set using differently sized training sets and retrieval
     databases. For each size, five random subsets of the original training data were
@@ -981,9 +981,8 @@ similar behavior is observed.
 Finally, the mean of the quantile loss $\mathcal{L}_\tau$ on the test set for
 $\tau = 0.1, 0.5, 0.9$ has been considered (Figure~\ref{fig:quantile_losses}).
 Qualitatively, the results are similar to the ones obtained using MAPE and CRPS.
-Similarly to the observations above, the QRNN outperforms BMCI for smaller
- training set sizes but converges to similar values for training set sizes
- of $10^6$.
+The QRNN outperforms BMCI for smaller training set sizes but converges to similar
+ values for training set sizes of $10^6$.
 
   \begin{figure}[hbpt!]
     \centering
@@ -1009,29 +1008,34 @@ world data.
 
 In this section QRNNs are applied to retrieve cloud top pressure (CTP) using
 observations from the moderate resolution imaging spectroradiometer (MODIS 
-\citep{modis}). This experiment is based on the work by \cite{hakansson} who
+\citet{modis}). This experiment is based on the work by \cite{hakansson} who
 developed a cloud top pressure retrieval algorithm (NN-CTTH) based on neural
 networks. A QRNN based CTP retrieval is compared to the NN-CTTH algorithm and it
 is investigated how QRNNs can be used to estimate the retrieval uncertainty.
 
 \subsection{Data}
 
-For the training of the QRNNs, exactly the same data as for the training of the
-NN-CTTH algorithm is used. It consists of pixels of MODIS observations
-collocated with CALIPSO \citep{calipso} data from which the cloud top pressure
-is extracted. The algorithm uses only the $11 \unit{\mu m}$ and $12\unit{\mu m}$
-channels of MODIS to make the algorithm applicable to a broader range of
-sensors. In addition to the single pixel input, structural information is
-provided to the neural network in the form of various statistics computed on a
-$5 \times 5$ neighborhood around the pixel. Furthermore, numerical weather
-prediction data is provided to the network in the form of surface pressure,
-temperatures at several height levels, and column integrated water
+Exactly the same data as for the training of the NN-CTTH algorithm is used for
+the training of the QRNNs. The data set consists of MODIS Level 1B data
+\citep{myd021km, myd03} collocated with cloud properties obtained from CALIOP
+\citep{calipso}. The \textit{top layer pressure} variable from the CALIOP data
+is used as retrieval target. The data was taken from all orbits from 24 days
+(the 1st and 14th of every month) from the year 2010. \citet{hakansson} train
+neural networks using different combinations of input features and compare the
+resulting performance. Only the $11 \unit{\mu m}$ and $12\unit{\mu m}$ channels
+of MODIS are considered here, as they were found to yield a good compromise of
+performance and flexibility. In addition to the single pixel input, structural
+information is provided to the neural network in the form of various statistics
+computed on a $5 \times 5$ neighborhood around the pixel. Furthermore, numerical
+weather prediction data is provided to the network in the form of surface
+pressure, temperatures at several pressure levels, and column integrated water
 vapor.
 
 The data used for the training of the QRNNs are the \textit{training} and
-\textit{during-training validation set} from \cite{hakansson}. For the
-comparison to NN-CTTH, the data set for \textit{testing under development} is
-used.
+\textit{during-training validation set} from \cite{hakansson}. The QRNNs are
+compared to the AVHRR version of the NN-CTTH algorithm, as this is the one
+using the same input data for the retrieval. The comparison to NN-CTTH is
+performed on the data set for \textit{testing under development}.
 
 \subsection{Training}
 
@@ -1040,7 +1044,7 @@ is used for the training of the QRNNs. The \textit{during-training validation} s
 to monitor training progress based on which the learning rate is reduced or the
 training stopped. After performing a grid search (results not shown) over width,
 depth and minibatch size, the best performance on the validation set was
-obtained for networks with 4 layers with 64 neurons each, ReLU activation functions,
+obtained for networks with four layers with 64 neurons each, ReLU activation functions,
  and a batch size of 128 samples.
 
 The main difference in the training process compared to the previous experiment
@@ -1051,8 +1055,8 @@ characteristics. This is not the case for MODIS observations; instead,
 adversarial training is used here to ensure well-calibrated predictions. For the
 tuning of the perturbation parameter $\delta_{\text{adv}}$ (c.f.
 Sect.~\ref{sec:adversarial_training}), the calibration on the during-training
-validation set was monitored using a calibration plot. Ideally it would be
-desirable to have a separate data set to tune this parameter, but this was
+validation set was monitored using a calibration plot. Ideally, it would be
+desirable to use a separate data set to tune this parameter, but this was
 sufficient in this case to achieve good results on the test data. The calibration curves
 obtained using different values of $\delta_\text{adv}$ are displayed in
 Figure~\ref{fig:validation_calibration}. It can be seen from the plot that
@@ -1065,14 +1069,21 @@ on these results, $\delta_\text{adv} = 0.05$ is chosen for the training.
 
   \begin{figure}[hbpt!]
     \centering
-    \includegraphics[width = 0.4\linewidth]{../plots/fig07}
+    \includegraphics[width = 0.6\linewidth]{../plots/fig07}
     \caption{Calibration of the QRNN prediction intervals on the validation set
       used during training. The curves display the results for no adversarial training
       ($\delta_\text{adv} = 0$) and adversarial training with perturbation
       factor $\delta_\text{adv} = 0.01, 0.05, 0.1$.}
     \label{fig:validation_calibration}
   \end{figure}
-
+  
+Except for the use of adversarial training, the structure of the underlying
+network and the training process of the QRNN are fairly similar to what is used
+for the NN-CTTH retrieval. The QRNN uses four instead of two hidden layers with
+64 neurons in each of them instead of 30 in the first and 15 in second layer.
+While this makes the neural network used in the QRNN slightly more complex, this
+should not be a major drawback since computational performance is generally not
+critical for neural network retrievals.
 
 \subsection{Prediction accuracy}
 
@@ -1107,19 +1118,20 @@ absolute error (MAE) and mean squared error (MSE). A Gaussian error model
 is chosen here as it is arguably the most common distribution used to represent
 random errors.
 
-A plot of the errors observed on the \textit{testing during development} data set
-and the fitted Gaussian error distributions is displayed in Panel (a) of
-Figure~\ref{fig:error_fit}. Panel (b) displays the observed error
-together with the predicted error obtained from a single QRNN. The predicted
-error is computed as the deviation of a random sample of the estimated a posteriori
-distribution from its median. The fitted Gaussian error distributions clearly do
-not provide a good fit to the observed error. On the other hand, the predicted
- errors obtained from the QRNN a posteriori distributions yield good agreement with
-the observed error. This indicates that the QRNN successfully learned to predict
-retrieval uncertainties. Furthermore, the results show that the ensemble of
-QRNNs actually provides a slightly worse fit to the observed error than a single
-QRNN. An ensemble of QRNNs thus does not necessarily improve the calibration of
-the predictions.
+A plot of the errors observed on the \textit{testing during development} data
+set and the fitted Gaussian error distributions is displayed in Panel (a) of
+Figure~\ref{fig:error_fit}. The fitted error curves correspond to the Gaussian
+probability density functions with the same MAE and MSE as observed on the test
+data. Panel (b) displays the observed error together with the predicted error
+obtained from a single QRNN. The predicted error is computed as the deviation of
+a random sample of the estimated a posteriori distribution from its median. The
+fitted Gaussian error distributions clearly do not provide a good fit to the
+observed error. On the other hand, the predicted errors obtained from the QRNN a
+posteriori distributions yield good agreement with the observed error. This
+indicates that the QRNN successfully learned to predict retrieval uncertainties.
+Furthermore, the results show that the ensemble of QRNNs actually provides a
+slightly worse fit to the observed error than a single QRNN. An ensemble of
+QRNNs thus does not necessarily improve the calibration of the predictions.
 
   \begin{figure}[hbpt!]
     \centering
@@ -1138,12 +1150,12 @@ the predictions.
 The Gaussian error model based on the MAE fit has also been used to produce
 prediction intervals for the CTP values obtained from the NN-CTTH algorithm.
 Figure~\ref{fig:calibration} displays the resulting calibration curves for the
-NN-CTTH algorithm, a simple QRNN and an ensemble of QRNNs. The results
-support the finding that a single QRNN is able to provide well calibrated
-probabilistic predictions of the a posteriori distribution. The calibration
-curve for the ensemble predictions is virtually identical to that for the single
-network. The NN-CTTH predictions are not as well calibrated and tend to provide
-prediction intervals that are too wide for $p = 0.1, 0.3, 0.5, 0.7$ but
+NN-CTTH algorithm, a simple QRNN and an ensemble of QRNNs. The results support
+the finding that a single QRNN is able to provide well calibrated probabilistic
+predictions of the a posteriori distribution. The calibration curve for the
+ensemble predictions is virtually identical to that for the single network. The
+NN-CTTH predictions using a Gaussian fit are not as well calibrated and tend to
+provide prediction intervals that are too wide for $p = 0.1, 0.3, 0.5, 0.7$ but
 overly narrow intervals for $p = 0.9$.
 
   \begin{figure}[hbpt!]
@@ -1173,7 +1185,7 @@ cloud types, thus giving different a posteriori distributions.
 
  For the NN-CTTH algorithm, the results look different. While for low clouds
 the calibration deteriorates, the calibration is even slightly improved for
-low clouds. This is not surprising as the Gaussian fit may be more
+high clouds. This is not surprising as the Gaussian fit may be more
 appropriate on different subsets of the test data. 
 
   \begin{figure}[hbpt!]
@@ -1189,7 +1201,7 @@ appropriate on different subsets of the test data.
 \label{sec:conclusions}
 
 In this article, quantile regression neural networks have been proposed as a
-method to estimate a posteriori distributions of Bayesian retrieval problems.
+method to estimate a posteriori distributions of Bayesian remote sensing retrievals.
 They have been applied to two retrievals of scalar atmospheric variables. It has
 been demonstrated that QRNNs are capable of providing accurate and
 well-calibrated probabilistic predictions in agreement with the Bayesian
@@ -1202,13 +1214,13 @@ Bayesian formulation. This in itself seems worthwhile to note, as it reveals the
 importance of the training set statistics that implicitly represent the a priori
 knowledge. On the synthetic data set, QRNNs compare well to BMCI and even perform
 better for small data sets. This indicates that they are able to handle the
-``curse of dimensionality'' better than BMCI, which would make them more suitable
+``curse of dimensionality'' \citep{friedman} better than BMCI, which would make them more suitable
 for the application to retrieval problems with high-dimensional measurement
 spaces.
 
 While the optimization of computational performance of the BMCI method has not been
 investigated in this work, at least compared to a naive implementation of BMCI,
-QRNNs allow for up to one order of magnitude faster retrievals. QRNN retrievals
+QRNNs allow for at least one order of magnitude faster retrievals. QRNN retrievals
 can be easily parallelized and hardware optimized implementations are available
 for all modern computing architectures, thus providing very good performance out
 of the box.
@@ -1234,7 +1246,7 @@ however, is a limitation inherent to all empirical methods.
 
 The second application case presented here demonstrated the ability of QRNNs to represent
 non-Gaussian retrieval errors. While, as shown in this study, this is also the case
-for BMCI, it is common in practice to estimate only mean and standard
+for BMCI (Eq.~(\ref{eq:bmci_cdf})), it is common in practice to estimate only mean and standard
 deviation of the a posteriori distribution. Furthermore, implementations usually
 assume Gaussian measurement errors, which is an unlikely assumption if the
 observations in the retrieval database contain modeling errors. By requiring no
@@ -1355,20 +1367,23 @@ accessible from public repositories \citep{predictive_uncertainty, smhi}.}
 
 
 
-\authorcontribution{All authors contributed to the study through discussion and feedback.
-  Patrick Ericksson and Simon Pfreundschuh designed the study.
-  Anke Thoss and Nina H{\aa}kansson provided the training data for the cloud top pressure
-  retrieval.
-  Simon Pfreundschuh implemented and performed the calculations and prepared the manuscript
-  including figures and tables.
-} %% optional section
+\authorcontribution{All authors contributed to the study through discussion and
+feedback. Patrick Eriksson and Bengt Rydberg proposed the application of QRNNs
+to remote sensing retrievals. The study was designed and implemented by Simon Pfreundschuh,
+who also prepared the manuscript including figures, text and tables.
+Anke Thoss and Nina H{\aa}kansson provided the training data for the cloud top
+pressure retrieval.} %% optional section
 
 \competinginterests{The authors declare that they have no conflict of interest.} %% this section is mandatory even if you declare that no competing interests are present
 
 %\disclaimer{TEXT} %% optional section
 
 \begin{acknowledgements}
-This research was funded by the Swedish National Space Board.
+The scientists at Chalmers University of Technology were funded by the Swedish National Space Board.
+
+The authors would like to acknowledge the work of Ronald Scheirer and Sara
+Hörnquist who were involved in the creation of the collocation dataset that was
+used as training and test data for the cloud top pressure retrieval.
 
 Numerous free software packages were used to perform the numerical experiments
 presented in this article and visualize their results. The authors would like to
