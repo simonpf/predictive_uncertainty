@@ -1,0 +1,104 @@
+% Created 2018-06-25 Mo 13:07
+% Intended LaTeX compiler: pdflatex
+\documentclass[11pt]{scrartcl}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{grffile}
+\usepackage{longtable}
+\usepackage{wrapfig}
+\usepackage{rotating}
+\usepackage[normalem]{ulem}
+\usepackage{amsmath}
+\usepackage{textcomp}
+\usepackage{amssymb}
+\usepackage{capt-of}
+\usepackage{hyperref}
+\author{simon}
+\date{\today}
+\title{}
+\hypersetup{
+ pdfauthor={Simon Pfreundschuh},
+ pdftitle={},
+ pdfkeywords={},
+ pdfsubject={},
+ pdfcreator={Emacs 24.5.1}, 
+ pdflang={English}}
+\begin{document}
+
+\setlength{\parindent}{0cm}
+
+\section*{Interactive comment on ``A neural network approach to estimate a posteriori distributions of Bayesian retrieval problems'' by Simon Pfreundschuh et al.}
+
+\subsection*{Referee comment:}
+
+P. 15: in the comparisons between QRNN and the BMCI, as the training data or a-prior
+get smaller, the BMCI uncertainties need to be increased beyond the sensor noise to
+account for a sparse a-priori.  If that was not done, it likely explains the divergence in
+the performance for smaller training sets.  That said, finding the uncertainty due to a
+sparse a-priori is not at all trivial so it might still be an advantage for the QRNN but
+perhaps slightly different than presented. A bit more explanation by the author on this
+topic would help the paper. The conclusion mentions this as well.
+
+\subsection*{Author response:}
+
+This is a very valid point that has indeed not been considered in the presented
+calculations. However, in particular since there is no formal way of doing this,
+it seems that finding suitable ways of handling scarce databases with BMCI would
+merit a study of its own. Applying just any ad-hoc solution to increase the
+measurement uncertainty is unlikely to do the BMCI method justice, so the authors
+judge it to be out of the scope of the study to investigate this further.
+
+To address this in the manuscript, the following paragraph has been added:
+
+\vspace{1em}
+
+\textit{
+A possible approach to handling scarce retrieval databases with BMCI is to
+artificially increase the assumed measurement uncertainty. This has not been
+performed for the BMCI results presented here and may improve the performance of
+the method. The difficulty with this approach is that the method formulation
+is based on the assumption of a sufficiently large database and thus can,
+at least formally, not be handle scarce training data. Finding a suitable way to
+increase the measurement uncertainty would thus require either additional
+methodological development or invention of an heuristic approach, both of which
+are outside the scope of this study.}
+
+\subsection*{Referee comment}
+
+P. 12, line 12:  Maybe I missed it but I don’t think Rectilinear Linear Unit was ever
+defined in the paper.
+
+\subsection*{Author response}
+
+The ReLU activation function is now introduced as Rectified Linear Unit the
+first time the acronym is used in the text.
+
+\subsection*{Referee comment}
+I am quite certain that neither “Gaussianity” (p.3, line 2) nor “overproportionally” (p. 12,
+line 20) are real words.
+
+\subsection*{Author response}
+
+The word \emph{Gaussianity} has been replaced. The sentence now reads:
+
+\vspace{1em}
+\textit{
+Nonetheless, even neglecting the validity of the assumptions of Gaussian
+a priori and measurement errors as well as linearity of the forward
+model, the method is unsuitable for retrievals that involve complex
+radiative processes.
+}
+\vspace{1em}
+
+Similarly, \emph{overproportionally} (which correctly should have been
+overpropotionately) has been replaced by \emph{excessively}.
+
+\subsection*{Referee comment}
+
+p. 4, line 15: There is an extra “from” in front of “directly”
+
+\subsection*{Author comment}
+
+The word \emph{from} has been removed.
+\end{document}
